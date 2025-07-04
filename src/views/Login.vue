@@ -1,0 +1,544 @@
+<template>
+  <div class="auth-container">
+    <!-- 背景装饰 -->
+    <div class="auth-decoration"></div>
+    
+    <!-- 主内容区 -->
+    <div class="auth-content">
+      <!-- 品牌标识 -->
+      <div class="auth-brand">
+        <h1 class="brand-title">交小荣AI助手</h1>
+        <p class="brand-slogan">智能教务，一键触达</p>
+      </div>
+      
+      <!-- 表单卡片 -->
+      <div class="auth-card">
+        <!-- 选项卡切换 -->
+        <div class="auth-tabs">
+          <button 
+            class="auth-tab" 
+            :class="{ 'active': activeTab === 'login' }"
+            @click="activeTab = 'login'"
+          >
+            登录
+          </button>
+          <button 
+            class="auth-tab" 
+            :class="{ 'active': activeTab === 'register' }"
+            @click="activeTab = 'register'"
+          >
+            注册
+          </button>
+        </div>
+        
+        <!-- 表单内容 -->
+        <div class="auth-form-container">
+          <!-- 登录表单 -->
+          <div 
+            class="auth-form" 
+            v-show="activeTab === 'login'"
+            :class="{ 'slide-in': activeTab === 'login' }"
+          >
+            <el-form 
+              ref="loginFormRef" 
+              :model="loginForm" 
+              :rules="loginRules" 
+              label-position="top"
+              class="form"
+            >
+              <el-form-item label="用户名" prop="username">
+                <el-input 
+                  v-model="loginForm.username" 
+                  prefix-icon="User" 
+                  placeholder="请输入用户名"
+                ></el-input>
+              </el-form-item>
+              
+              <el-form-item label="密码" prop="password">
+                <el-input 
+                  v-model="loginForm.password" 
+                  prefix-icon="Lock" 
+                  type="password" 
+                  placeholder="请输入密码"
+                ></el-input>
+              </el-form-item>
+              
+              <el-form-item class="form-actions">
+                <el-checkbox v-model="loginForm.remember">记住我</el-checkbox>
+                <a href="#" class="forgot-password">忘记密码?</a>
+              </el-form-item>
+              
+              <el-form-item>
+                <el-button 
+                  type="primary" 
+                  :loading="loginLoading" 
+                  @click="handleLogin"
+                  class="submit-btn"
+                >
+                  登录
+                </el-button>
+              </el-form-item>
+            </el-form>
+            
+            <div class="social-login">
+              <p class="divider"><span>其他登录方式</span></p>
+              <div class="social-buttons">
+                <el-button type="text" icon="Wechat" @click="handleSocialLogin('wechat')"></el-button>
+                <el-button type="text" icon="Qq" @click="handleSocialLogin('qq')"></el-button>
+                <el-button type="text" icon="Github" @click="handleSocialLogin('github')"></el-button>
+              </div>
+            </div>
+          </div>
+          
+          <!-- 注册表单 -->
+          <div 
+            class="auth-form" 
+            v-show="activeTab === 'register'"
+            :class="{ 'slide-in': activeTab === 'register' }"
+          >
+            <el-form 
+              ref="registerFormRef" 
+              :model="registerForm" 
+              :rules="registerRules" 
+              label-position="top"
+              class="form"
+            >
+              <el-form-item label="用户名" prop="username">
+                <el-input 
+                  v-model="registerForm.username" 
+                  prefix-icon="User" 
+                  placeholder="请输入用户名"
+                ></el-input>
+              </el-form-item>
+              
+              <el-form-item label="邮箱" prop="email">
+                <el-input 
+                  v-model="registerForm.email" 
+                  prefix-icon="Mail" 
+                  placeholder="请输入邮箱"
+                ></el-input>
+              </el-form-item>
+              
+              <el-form-item label="密码" prop="password">
+                <el-input 
+                  v-model="registerForm.password" 
+                  prefix-icon="Lock" 
+                  type="password" 
+                  placeholder="请输入密码"
+                ></el-input>
+              </el-form-item>
+              
+              <el-form-item label="确认密码" prop="confirmPassword">
+                <el-input 
+                  v-model="registerForm.confirmPassword" 
+                  prefix-icon="Lock" 
+                  type="password" 
+                  placeholder="请再次输入密码"
+                ></el-input>
+              </el-form-item>
+              
+              <el-form-item class="form-actions">
+                <el-checkbox v-model="registerForm.agree">我已阅读并同意<a href="#" class="terms-link">用户协议</a>和<a href="#" class="terms-link">隐私政策</a></el-checkbox>
+              </el-form-item>
+              
+              <el-form-item>
+                <el-button 
+                  type="primary" 
+                  :loading="registerLoading" 
+                  @click="handleRegister"
+                  class="submit-btn"
+                >
+                  注册
+                </el-button>
+              </el-form-item>
+            </el-form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</template>
+
+<script lang="ts" setup>
+import { ref, reactive } from 'vue';
+import { ElMessage } from 'element-plus';
+import { useRouter } from 'vue-router';
+
+const router = useRouter();
+
+// 表单状态
+const activeTab = ref('login');
+const loginLoading = ref(false);
+const registerLoading = ref(false);
+
+// 表单数据
+const loginForm = reactive({
+  username: '',
+  password: '',
+  remember: false
+});
+
+const registerForm = reactive({
+  username: '',
+  email: '',
+  password: '',
+  confirmPassword: '',
+  agree: false
+});
+
+// 表单验证规则
+const loginRules = reactive({
+  username: [
+    { required: true, message: '请输入用户名', trigger: 'blur' }
+  ],
+  password: [
+    { required: true, message: '请输入密码', trigger: 'blur' },
+    { min: 6, message: '密码长度至少为6位', trigger: 'blur' }
+  ]
+});
+
+const registerRules = reactive({
+  username: [
+    { required: true, message: '请输入用户名', trigger: 'blur' },
+    { min: 3, message: '用户名长度至少为3位', trigger: 'blur' }
+  ],
+  email: [
+    { required: true, message: '请输入邮箱', trigger: 'blur' },
+    { type: 'email', message: '请输入正确的邮箱格式', trigger: 'blur' }
+  ],
+  password: [
+    { required: true, message: '请输入密码', trigger: 'blur' },
+    { min: 6, message: '密码长度至少为6位', trigger: 'blur' }
+  ],
+  confirmPassword: [
+    { required: true, message: '请确认密码', trigger: 'blur' },
+    { validator: (rule: any, value: string, callback: any) => {
+        if (value !== registerForm.password) {
+          callback(new Error('两次输入的密码不一致'));
+        } else {
+          callback();
+        }
+      }, trigger: 'blur' }
+  ],
+  agree: [
+    { required: true, message: '请阅读并同意用户协议', trigger: 'change' }
+  ]
+});
+
+// 表单引用
+const loginFormRef = ref();
+const registerFormRef = ref();
+
+// 登录处理
+const handleLogin = () => {
+  (loginFormRef.value as any)?.validate((valid: boolean) => {
+    if (valid) {
+      loginLoading.value = true;
+      
+      // 模拟登录请求
+      setTimeout(() => {
+        loginLoading.value = false;
+        ElMessage.success('登录成功');
+        router.push('/aiChat');
+      }, 1500);
+    } else {
+      ElMessage.warning('请完善登录信息');
+      return false;
+    }
+  });
+};
+
+// 注册处理
+const handleRegister = () => {
+  (registerFormRef.value as any)?.validate((valid: boolean) => {
+    if (valid) {
+      registerLoading.value = true;
+      
+      // 模拟注册请求
+      setTimeout(() => {
+        registerLoading.value = false;
+        ElMessage.success('注册成功，请登录');
+        activeTab.value = 'login';
+      }, 1500);
+    } else {
+      ElMessage.warning('请完善注册信息');
+      return false;
+    }
+  });
+};
+
+// 社交登录
+const handleSocialLogin = (type: string) => {
+  ElMessage.info(`正在使用${type}账号登录...`);
+  // 实际项目中实现社交登录逻辑
+};
+</script>
+
+<style lang="scss" scoped>
+.auth-container {
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(135deg, #f5f7fa 0%, #e4eaf2 100%);
+  
+  // 背景装饰
+  .auth-decoration {
+    position: absolute;
+    top: -50%;
+    right: -50%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, #409eff 0%, #165dff 100%);
+    border-radius: 50%;
+    transform: scale(1.5);
+    z-index: 0;
+    box-shadow: 0 0 50px rgba(64, 158, 255, 0.3);
+  }
+  
+  // 主内容
+  .auth-content {
+    width: 100%;
+    max-width: 1200px;
+    padding: 40px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    z-index: 1;
+    
+    // 品牌标识
+    .auth-brand {
+      text-align: center;
+      margin-bottom: 40px;
+      
+      .brand-logo {
+        height: 80px;
+        margin-bottom: 20px;
+        filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.1));
+        transition: transform 0.3s ease;
+        
+        &:hover {
+          transform: scale(1.05);
+        }
+      }
+      
+      .brand-title {
+        font-size: 28px;
+        font-weight: 600;
+        color: #333;
+        margin-bottom: 10px;
+      }
+      
+      .brand-slogan {
+        font-size: 16px;
+        color: #606266;
+        opacity: 0.8;
+      }
+    }
+    
+    // 表单卡片
+    .auth-card {
+      width: 100%;
+      max-width: 400px;
+      background-color: #fff;
+      border-radius: 16px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+      overflow: hidden;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      
+      &:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.12);
+      }
+      
+      // 选项卡
+      .auth-tabs {
+        display: flex;
+        border-bottom: 1px solid #ebeef5;
+        
+        .auth-tab {
+          flex: 1;
+          padding: 18px 0;
+          font-size: 16px;
+          font-weight: 500;
+          color: #606266;
+          background-color: transparent;
+          border: none;
+          cursor: pointer;
+          transition: all 0.2s ease;
+          
+          &:hover {
+            color: #409eff;
+          }
+          
+          &.active {
+            color: #165dff;
+            font-weight: 600;
+            border-bottom: 2px solid #165dff;
+          }
+        }
+      }
+      
+      // 表单容器
+      .auth-form-container {
+        padding: 30px 40px;
+        
+        // 表单
+        .auth-form {
+          opacity: 0;
+          transform: translateX(30px);
+          transition: all 0.4s ease;
+          height: 0;
+          overflow: hidden;
+          
+          &.slide-in {
+            opacity: 1;
+            transform: translateX(0);
+            height: auto;
+          }
+          
+          // 表单操作区
+          .form-actions {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+          }
+          
+          .forgot-password {
+            color: #409eff;
+            font-size: 14px;
+            text-decoration: none;
+            transition: color 0.2s;
+            
+            &:hover {
+              color: #165dff;
+            }
+          }
+          
+          // 提交按钮
+          .submit-btn {
+            width: 100%;
+            height: 44px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            
+            &:hover:not(:disabled) {
+              transform: translateY(-2px);
+              box-shadow: 0 4px 12px rgba(64, 158, 255, 0.3);
+            }
+            
+            &:active:not(:disabled) {
+              transform: translateY(0);
+            }
+          }
+        }
+        
+        // 社交登录
+        .social-login {
+          margin-top: 30px;
+          
+          .divider {
+            position: relative;
+            text-align: center;
+            margin-bottom: 20px;
+            
+            span {
+              background-color: #fff;
+              padding: 0 10px;
+              color: #909399;
+              font-size: 14px;
+              position: relative;
+              z-index: 1;
+            }
+            
+            &::before {
+              content: '';
+              position: absolute;
+              top: 50%;
+              left: 0;
+              width: 100%;
+              height: 1px;
+              background-color: #ebeef5;
+              z-index: 0;
+            }
+          }
+          
+          .social-buttons {
+            display: flex;
+            justify-content: center;
+            
+            .el-button {
+              width: 40px;
+              height: 40px;
+              border-radius: 50%;
+              margin: 0 10px;
+              transition: all 0.2s ease;
+              
+              .el-icon {
+                font-size: 20px;
+              }
+              
+              &:hover {
+                transform: scale(1.1);
+              }
+              
+              &:nth-child(1) {
+                color: #07c160;
+              }
+              
+              &:nth-child(2) {
+                color: #1da1f2;
+              }
+              
+              &:nth-child(3) {
+                color: #333;
+              }
+            }
+          }
+        }
+        
+        // 条款链接
+        .terms-link {
+          color: #409eff;
+          text-decoration: none;
+          transition: color 0.2s;
+          
+          &:hover {
+            color: #165dff;
+          }
+        }
+      }
+    }
+  }
+}
+
+// 响应式设计
+@media (max-width: 768px) {
+  .auth-container {
+    .auth-content {
+      padding: 20px;
+      
+      .auth-brand {
+        .brand-logo {
+          height: 60px;
+        }
+        
+        .brand-title {
+          font-size: 24px;
+        }
+        
+        .brand-slogan {
+          font-size: 14px;
+        }
+      }
+      
+      .auth-card {
+        max-width: 320px;
+      }
+    }
+  }
+}
+</style>
