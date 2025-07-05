@@ -46,21 +46,27 @@
               label-position="top"
               class="form"
             >
-              <el-form-item label="用户名" prop="username">
+              <el-form-item label="学号" prop="username">
                 <el-input 
                   v-model="loginForm.username" 
-                  prefix-icon="User" 
-                  placeholder="请输入用户名"
-                ></el-input>
+                  placeholder="请输入学号"
+                >
+                  <template #prefix>
+                    <font-awesome-icon :icon="faUser" class="input-icon" />
+                  </template>
+                </el-input>
               </el-form-item>
               
               <el-form-item label="密码" prop="password">
                 <el-input 
                   v-model="loginForm.password" 
-                  prefix-icon="Lock" 
                   type="password" 
                   placeholder="请输入密码"
-                ></el-input>
+                >
+                  <template #prefix>
+                    <font-awesome-icon :icon="faLock" class="input-icon" />
+                  </template>
+                </el-input>
               </el-form-item>
               
               <el-form-item class="form-actions">
@@ -83,9 +89,38 @@
             <div class="social-login">
               <p class="divider"><span>其他登录方式</span></p>
               <div class="social-buttons">
-                <el-button type="text" icon="Wechat" @click="handleSocialLogin('wechat')"></el-button>
-                <el-button type="text" icon="Qq" @click="handleSocialLogin('qq')"></el-button>
-                <el-button type="text" icon="Github" @click="handleSocialLogin('github')"></el-button>
+                <el-button 
+                  type="text" 
+                  class="social-btn" 
+                  @click="handleSocialLogin('weibo')"
+                  aria-label="微博登录"
+                >
+                  <font-awesome-icon :icon="faWeibo" />
+                </el-button>
+                <el-button 
+                  type="text" 
+                  class="social-btn" 
+                  @click="handleSocialLogin('wechat')"
+                  aria-label="微信登录"
+                >
+                  <font-awesome-icon :icon="faWeixin" />
+                </el-button>
+                <el-button 
+                  type="text" 
+                  class="social-btn" 
+                  @click="handleSocialLogin('qq')"
+                  aria-label="QQ登录"
+                >
+                  <font-awesome-icon :icon="faQq" />
+                </el-button>
+                <el-button 
+                  type="text" 
+                  class="social-btn" 
+                  @click="handleSocialLogin('github')"
+                  aria-label="Github登录"
+                >
+                  <font-awesome-icon :icon="faGithub" />
+                </el-button>
               </div>
             </div>
           </div>
@@ -103,38 +138,50 @@
               label-position="top"
               class="form"
             >
-              <el-form-item label="用户名" prop="username">
+              <el-form-item label="学号" prop="username">
                 <el-input 
                   v-model="registerForm.username" 
-                  prefix-icon="User" 
-                  placeholder="请输入用户名"
-                ></el-input>
+                  placeholder="请输入学号"
+                >
+                  <template #prefix>
+                    <font-awesome-icon :icon="faUser" class="input-icon" />
+                  </template>
+                </el-input>
               </el-form-item>
               
               <el-form-item label="邮箱" prop="email">
                 <el-input 
                   v-model="registerForm.email" 
-                  prefix-icon="Mail" 
                   placeholder="请输入邮箱"
-                ></el-input>
+                >
+                  <template #prefix>
+                    <font-awesome-icon :icon="faMail" class="input-icon" />
+                  </template>
+                </el-input>
               </el-form-item>
               
               <el-form-item label="密码" prop="password">
                 <el-input 
                   v-model="registerForm.password" 
-                  prefix-icon="Lock" 
                   type="password" 
                   placeholder="请输入密码"
-                ></el-input>
+                >
+                  <template #prefix>
+                    <font-awesome-icon :icon="faLock" class="input-icon" />
+                  </template>
+                </el-input>
               </el-form-item>
               
               <el-form-item label="确认密码" prop="confirmPassword">
                 <el-input 
                   v-model="registerForm.confirmPassword" 
-                  prefix-icon="Lock" 
                   type="password" 
                   placeholder="请再次输入密码"
-                ></el-input>
+                >
+                  <template #prefix>
+                    <font-awesome-icon :icon="faLock" class="input-icon" />
+                  </template>
+                </el-input>
               </el-form-item>
               
               <el-form-item class="form-actions">
@@ -163,8 +210,24 @@
 import { ref, reactive } from 'vue';
 import { ElMessage } from 'element-plus';
 import { useRouter } from 'vue-router';
+import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
+// 正确导入FontAwesome图标（注意区分solid和brands分类）
+import { faUser, faLock, faMailBulk as faMail } from '@fortawesome/free-solid-svg-icons';
+import { faWeibo, faWeixin, faGithub } from '@fortawesome/free-brands-svg-icons';
+import { faQq } from '@fortawesome/free-brands-svg-icons'; // QQ图标在brands分类
 
 const router = useRouter();
+
+// 导出图标供模板使用
+const icons = {
+  faUser,
+  faLock,
+  faMail,
+  faWeibo,
+  faWeixin,
+  faQq,
+  faGithub
+};
 
 // 表单状态
 const activeTab = ref('login');
@@ -189,7 +252,8 @@ const registerForm = reactive({
 // 表单验证规则
 const loginRules = reactive({
   username: [
-    { required: true, message: '请输入用户名', trigger: 'blur' }
+    { required: true, message: '请输入学号', trigger: 'blur' },
+    { pattern: /^\d+$/, message: '学号必须为数字', trigger: 'blur' } // 新增学号格式验证
   ],
   password: [
     { required: true, message: '请输入密码', trigger: 'blur' },
@@ -199,8 +263,9 @@ const loginRules = reactive({
 
 const registerRules = reactive({
   username: [
-    { required: true, message: '请输入用户名', trigger: 'blur' },
-    { min: 3, message: '用户名长度至少为3位', trigger: 'blur' }
+    { required: true, message: '请输入学号', trigger: 'blur' },
+    { pattern: /^\d+$/, message: '学号必须为数字', trigger: 'blur' },
+    { min: 8, message: '学号长度至少为8位', trigger: 'blur' } // 更严格的学号验证
   ],
   email: [
     { required: true, message: '请输入邮箱', trigger: 'blur' },
@@ -208,7 +273,8 @@ const registerRules = reactive({
   ],
   password: [
     { required: true, message: '请输入密码', trigger: 'blur' },
-    { min: 6, message: '密码长度至少为6位', trigger: 'blur' }
+    { min: 6, message: '密码长度至少为6位', trigger: 'blur' },
+    { pattern: /^(?=.*[A-Za-z])(?=.*\d).+$/, message: '密码必须包含字母和数字', trigger: 'blur' } // 增强密码安全性
   ],
   confirmPassword: [
     { required: true, message: '请确认密码', trigger: 'blur' },
@@ -296,6 +362,7 @@ const handleSocialLogin = (type: string) => {
     transform: scale(1.5);
     z-index: 0;
     box-shadow: 0 0 50px rgba(64, 158, 255, 0.3);
+    animation: float 8s ease-in-out infinite; // 背景浮动动画
   }
   
   // 主内容
@@ -313,22 +380,12 @@ const handleSocialLogin = (type: string) => {
       text-align: center;
       margin-bottom: 40px;
       
-      .brand-logo {
-        height: 80px;
-        margin-bottom: 20px;
-        filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.1));
-        transition: transform 0.3s ease;
-        
-        &:hover {
-          transform: scale(1.05);
-        }
-      }
-      
       .brand-title {
         font-size: 28px;
         font-weight: 600;
         color: #333;
         margin-bottom: 10px;
+        letter-spacing: 0.5px;
       }
       
       .brand-slogan {
@@ -385,6 +442,13 @@ const handleSocialLogin = (type: string) => {
       .auth-form-container {
         padding: 30px 40px;
         
+        // 输入框图标
+        .input-icon {
+          color: #c0c4cc;
+          margin-right: 8px;
+          font-size: 16px;
+        }
+        
         // 表单
         .auth-form {
           opacity: 0;
@@ -415,6 +479,7 @@ const handleSocialLogin = (type: string) => {
             
             &:hover {
               color: #165dff;
+              text-decoration: underline;
             }
           }
           
@@ -470,32 +535,27 @@ const handleSocialLogin = (type: string) => {
             display: flex;
             justify-content: center;
             
-            .el-button {
-              width: 40px;
-              height: 40px;
+            .social-btn {
+              width: 45px;
+              height: 45px;
               border-radius: 50%;
               margin: 0 10px;
+              display: flex;
+              align-items: center;
+              justify-content: center;
               transition: all 0.2s ease;
-              
-              .el-icon {
-                font-size: 20px;
-              }
+              font-size: 20px; // 图标大小
               
               &:hover {
-                transform: scale(1.1);
+                transform: scale(1.15);
+                background-color: #f5f7fa;
               }
               
-              &:nth-child(1) {
-                color: #07c160;
-              }
-              
-              &:nth-child(2) {
-                color: #1da1f2;
-              }
-              
-              &:nth-child(3) {
-                color: #333;
-              }
+              // 社交图标颜色
+              &:nth-child(1) { color: #e6162d; } // 微博红
+              &:nth-child(2) { color: #07c160; } // 微信绿
+              &:nth-child(3) { color: #1da1f2; } // QQ蓝
+              &:nth-child(4) { color: #333; }    // Github灰
             }
           }
         }
@@ -508,11 +568,18 @@ const handleSocialLogin = (type: string) => {
           
           &:hover {
             color: #165dff;
+            text-decoration: underline;
           }
         }
       }
     }
   }
+}
+
+// 背景浮动动画
+@keyframes float {
+  0%, 100% { transform: scale(1.5) translate(0, 0); }
+  50% { transform: scale(1.55) translate(10px, 10px); }
 }
 
 // 响应式设计
@@ -522,10 +589,6 @@ const handleSocialLogin = (type: string) => {
       padding: 20px;
       
       .auth-brand {
-        .brand-logo {
-          height: 60px;
-        }
-        
         .brand-title {
           font-size: 24px;
         }

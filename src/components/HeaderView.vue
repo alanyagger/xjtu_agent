@@ -1,7 +1,8 @@
 <script lang="ts" setup>
 import { useRouter, useRoute } from "vue-router";
-import { ChatDotRound, User } from "@element-plus/icons-vue";
+import { ChatDotRound, User, ArrowDown } from "@element-plus/icons-vue";
 import { ref } from "vue";
+import { ElMessage } from "element-plus";
 
 const router = useRouter();
 const route = useRoute();
@@ -23,7 +24,7 @@ const navClickHandle = () => {
 };
 
 // 登录/登出处理
-const handleLogin = () => {
+const handleLogin = (command?: string) => {
   if (isLoggedIn.value) {
     // 处理登出逻辑
     isLoggedIn.value = false;
@@ -39,15 +40,15 @@ const handleLogin = () => {
   <header class="page-header">
     <div class="container">
       <div class="header-content">
-        <!-- Logo区域 -->
+        <!-- Logo区域 - 替换为交小荣logo.svg -->
         <div class="logo-container" @click="logoImgClickHandle">
           <el-image
-            src="https://5b0988e595225.cdn.sohucs.com/images/20190916/577ec8cdff7840918d9d1b03048c7dfd.jpeg"
+            src="/logo.png"  
             class="logo-image"
             fit="contain"
-            alt="学校Logo"
+            alt="交小荣Logo"
           />
-          <span class="logo-text">交小荣</span>
+          <!-- 移除原有文字，仅保留logo图片 -->
         </div>
         
         <!-- 导航区域 -->
@@ -100,7 +101,7 @@ const handleLogin = () => {
 .page-header {
   background-color: #ffffff;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-  padding: 15px 0;
+  padding: 12px 0; /* 稍微调整内边距以适应logo尺寸 */
   position: sticky;
   top: 0;
   z-index: 100;
@@ -117,7 +118,7 @@ const handleLogin = () => {
     align-items: center;
   }
   
-  // Logo区域
+  // Logo区域 - 调整样式以适应svg logo
   .logo-container {
     display: flex;
     align-items: center;
@@ -129,16 +130,9 @@ const handleLogin = () => {
     }
     
     .logo-image {
-      height: 40px;
+      height: 44px; /* 适当调整logo高度 */
       width: auto;
-      margin-right: 10px;
-    }
-    
-    .logo-text {
-      font-size: 20px;
-      font-weight: 600;
-      color: #333;
-      display: none; // 默认隐藏，在大屏幕显示
+      // 移除右侧margin，因为不再有文字
     }
   }
   
@@ -203,10 +197,6 @@ const handleLogin = () => {
 // 响应式设计
 @media (min-width: 768px) {
   .page-header {
-    .logo-container .logo-text {
-      display: inline-block;
-    }
-    
     .nav-container .nav-item {
       padding: 8px 20px;
     }
