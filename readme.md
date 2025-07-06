@@ -3,6 +3,10 @@
 2. [How to run](#how-to-run)
 ### **XJTU 交小荣智能学生教务平台**
 ## Environment setup
+Install dependencies:
+```shell
+node.js v22.17.0 
+```
 
 ## How to run:
 ```bash
