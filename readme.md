@@ -5,7 +5,8 @@
 ## Environment setup
 Install dependencies:
 ```shell
-node.js v22.17.0 
+node.js v22.17.0
+conda   v24.9.2
 ```
 Evironment dependencies can be **downloaded** from provided links in the table below:
 <table style="width:100%">
