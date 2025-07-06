@@ -7,7 +7,7 @@ Install dependencies:
 ```shell
 node.js v22.17.0 
 ```
-Pretrained checkpoints of different Stable Diffusion versions can be **downloaded** from provided links in the table below:
+Evironment dependencies can be **downloaded** from provided links in the table below:
 <table style="width:100%">
   <tr>
     <th>Version</th>
