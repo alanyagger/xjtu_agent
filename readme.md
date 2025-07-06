@@ -10,20 +10,16 @@ node.js v22.17.0
 Evironment dependencies can be **downloaded** from provided links in the table below:
 <table style="width:100%">
   <tr>
-    <th>Version</th>
+    <th></th>
     <th>Link</th>
   </tr>
   <tr>
-    <td>2.1</td>
-    <td><a href="https://huggingface.co/stabilityai/stable-diffusion-2-1-base">stable-diffusion-2-1-base</a></td>
+    <td>node</td>
+    <td><a href="https://nodejs.org/en/download">node.js</a></td>
   </tr>
   <tr>
-    <td>1.5</td>
-    <td><a href="https://huggingface.co/runwayml/stable-diffusion-v1-5">stable-diffusion-v1-5</a></td>
-  </tr>
-  <tr>
-    <td>1.4</td>
-    <td><a href="https://huggingface.co/CompVis/stable-diffusion-v1-4">stable-diffusion-v1-4</a></td>
+    <td>conda</td>
+    <td><a href="https://repo.anaconda.com/archive/">Anaconda</a></td>
   </tr>
 </table>
 
