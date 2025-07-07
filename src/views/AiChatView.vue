@@ -109,7 +109,11 @@ const askSpark = () => {
 const wsMsgReceiveHandle = (res: WSResParams) => {
   let dataArray = res?.payload?.choices?.text || [];
   for (let i = 0; i < dataArray.length; i++) {
-    chatList.value[chatList.value.length - 1].content += dataArray[i].content;
+    // 添加空值检查，确保 content 存在且不为 undefined
+    const content = dataArray[i]?.content;
+    if (content !== undefined && content !== null) {
+      chatList.value[chatList.value.length - 1].content += content;
+    }
   }
   // 开始接受消息
   if (res.payload.choices.status === 0) {
