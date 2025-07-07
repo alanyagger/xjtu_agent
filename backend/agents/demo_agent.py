@@ -1,20 +1,27 @@
+# -*- coding: utf-8 -*-
+import sys
 import os
+
+# 获取当前文件的目录（agents/）
+current_dir = os.path.dirname(os.path.abspath(__file__))
+# 获取 backend 目录（agents/ 的上一级目录）
+backend_dir = os.path.dirname(current_dir)
+# 将 backend 目录添加到 Python 搜索路径
+sys.path.append(backend_dir)
 from langchain_openai import ChatOpenAI
 from langchain.agents import create_openai_tools_agent, AgentExecutor
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
-from dotenv import load_dotenv
-
+from config import config
 # 导入我们上一步创建的工具
-from backend.tools.ehall_tools import get_current_semester_courses, get_grades_by_semester
+from tools.ehall_tools import get_current_semester_courses, get_grades_by_semester
 
-load_dotenv()
 
 # 1. 初始化大语言模型 (LLM)
 # 我们使用 OpenAI 的 gpt-4o 模型，因为它在工具使用方面表现很好
 llm = ChatOpenAI(
     model="gpt-4o",
     temperature=0, # 温度设为0，让输出更稳定
-    api_key=os.getenv("OPENAI_API_KEY")
+    api_key=config.OPENAI_API_KEY,
 )
 
 # 2. 定义智能体的工具箱
@@ -60,12 +67,12 @@ def run_agent(user_input: str, chat_history: list = None):
     })
     return result["output"]
 
-# # ---- 本地测试 ----
-# if __name__ == '__main__':
-#     print("你好，我是教务助手，有什么可以帮你的吗？（输入 exit 退出）")
-#     while True:
-#         user_query = input("You: ")
-#         if user_query.lower() == 'exit':
-#             break
-#         response = run_agent(user_query)
-#         print(f"Agent: {response}")
+# ---- 本地测试 ----
+if __name__ == '__main__':
+    print("你好，我是教务助手，有什么可以帮你的吗？（输入 exit 退出）")
+    while True:
+        user_query = input("You: ")
+        if user_query.lower() == 'exit':
+            break
+        response = run_agent(user_query)
+        print(f"Agent: {response}")
