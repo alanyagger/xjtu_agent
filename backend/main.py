@@ -38,6 +38,7 @@ app = FastAPI(
     description="基于FastAPI、LangChain和DeepSeek的智能教务系统",
     version=config.APP_VERSION
 )
+app.mount("/static", StaticFiles(directory="static"), name="static")
 
 origins = [
     "http://localhost:5173",
@@ -76,14 +77,6 @@ AI_ROLES = {
     "assistant": {
         "name": "智能助手",
         "prompt": "你是一个友善、专业的AI助手，能够帮助用户解答各种问题。请保持礼貌和耐心。"
-    },
-    "teacher": {
-        "name": "AI老师",
-        "prompt": "你是一位经验丰富的老师，擅长用简单易懂的方式解释复杂概念，善于启发学生思考。"
-    },
-    "programmer": {
-        "name": "编程专家",
-        "prompt": "你是一位资深的程序员，精通多种编程语言和技术栈，能够提供专业的编程建议和解决方案。"
     }
 }
 
@@ -108,13 +101,11 @@ def get_conversation_key(user_id: str, session_id: str) -> str:
 def get_user_sessions_key(user_id: str) -> str:
     return f"user_sessions:{user_id}"
 
-
-
 # API接口（保持不变，与前端交互逻辑不受影响）
 @app.get("/")
 async def root():
     logger.info("访问根路径，重定向到聊天界面")
-    return RedirectResponse(url="/frontend/index.html")
+    return RedirectResponse(url="/static/index.html")
 
 @app.get("/api")
 async def api_info():

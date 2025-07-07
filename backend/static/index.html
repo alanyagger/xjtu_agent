@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>交小荣智能教务系统 - 后端管理</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#3B82F6',
+                        secondary: '#10B981',
+                        warning: '#F59E0B',
+                        danger: '#EF4444',
+                        dark: '#1E293B',
+                        light: '#F8FAFC'
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .status-indicator {
+                @apply w-3 h-3 rounded-full inline-block;
+            }
+            .card-hover {
+                @apply transition-all duration-300 hover:shadow-lg hover:-translate-y-1;
+            }
+            .stat-card {
+                @apply bg-white rounded-lg shadow p-5 card-hover border border-gray-100;
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen font-sans text-gray-800">
+    <!-- 顶部导航栏 -->
+    <header class="bg-white shadow-md fixed top-0 left-0 right-0 z-10">
+        <div class="container mx-auto px-4 py-3 flex justify-between items-center">
+            <div class="flex items-center space-x-3">
+                <i class="fa fa-graduation-cap text-primary text-2xl"></i>
+                <h1 class="text-xl md:text-2xl font-bold text-gray-800">交小荣智能教务系统</h1>
+            </div>
+            <div class="flex items-center space-x-4">
+                <span class="hidden md:inline-block text-sm text-gray-600">
+                    版本: v1.0.0
+                </span>
+                <div class="flex items-center space-x-2">
+                    <span class="status-indicator bg-green-500" id="server-status"></span>
+                    <span class="text-sm font-medium">服务运行中</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- 主要内容区 -->
+    <main class="container mx-auto px-4 pt-24 pb-16">
+        <!-- 系统概览 -->
+        <section class="mb-12">
+            <h2 class="text-2xl font-bold mb-6 text-gray-800">系统概览</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="stat-card">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <p class="text-gray-500 text-sm mb-1">当前连接状态</p>
+                            <h3 class="text-2xl font-bold" id="connection-status">正常</h3>
+                        </div>
+                        <div class="bg-blue-100 p-3 rounded-lg">
+                            <i class="fa fa-plug text-primary text-xl"></i>
+                        </div>
+                    </div>
+                    <div class="mt-4 text-sm text-gray-600">
+                        <span>Redis: </span>
+                        <span id="redis-status" class="font-medium">已连接</span>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <p class="text-gray-500 text-sm mb-1">活跃会话</p>
+                            <h3 class="text-2xl font-bold" id="active-sessions">0</h3>
+                        </div>
+                        <div class="bg-green-100 p-3 rounded-lg">
+                            <i class="fa fa-comments text-secondary text-xl"></i>
+                        </div>
+                    </div>
+                    <div class="mt-4 text-sm text-gray-600">
+                        <span>总会话数: </span>
+                        <span id="total-sessions" class="font-medium">0</span>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <p class="text-gray-500 text-sm mb-1">系统负载</p>
+                            <h3 class="text-2xl font-bold" id="system-load">0%</h3>
+                        </div>
+                        <div class="bg-purple-100 p-3 rounded-lg">
+                            <i class="fa fa-server text-purple-600 text-xl"></i>
+                        </div>
+                    </div>
+                    <div class="mt-4 text-sm text-gray-600">
+                        <span>响应时间: </span>
+                        <span id="response-time" class="font-medium">0ms</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- API接口信息 -->
+        <section class="mb-12">
+            <h2 class="text-2xl font-bold mb-6 text-gray-800">API接口</h2>
+            <div class="bg-white rounded-lg shadow overflow-hidden">
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">路径</th>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">方法</th>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">描述</th>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">状态</th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-gray-200">
+                            <tr>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-primary">/</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">GET</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">根路径，重定向到聊天界面</td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">可用</span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-primary">/api</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">GET</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">API信息查询</td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">可用</span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-primary">/api/chat</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">POST</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">聊天交互接口</td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">可用</span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-primary">/api/sessions</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">GET</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">获取会话列表</td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">可用</span>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- 系统配置 -->
+        <section class="mb-12">
+            <h2 class="text-2xl font-bold mb-6 text-gray-800">系统配置</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="bg-white rounded-lg shadow p-6">
+                    <h3 class="text-lg font-semibold mb-4 text-gray-800">会话配置</h3>
+                    <ul class="space-y-3">
+                        <li class="flex justify-between">
+                            <span class="text-gray-600">最大历史消息数</span>
+                            <span class="font-medium">{{ MAX_HISTORY_MESSAGES }}</span>
+                        </li>
+                        <li class="flex justify-between">
+                            <span class="text-gray-600">最大消息长度</span>
+                            <span class="font-medium">{{ MAX_MESSAGE_LENGTH }} 字符</span>
+                        </li>
+                        <li class="flex justify-between">
+                            <span class="text-gray-600">会话过期时间</span>
+                            <span class="font-medium">{{ SESSION_EXPIRE_TIME }} 秒</span>
+                        </li>
+                        <li class="flex justify-between">
+                            <span class="text-gray-600">对话过期时间</span>
+                            <span class="font-medium">{{ CONVERSATION_EXPIRE_TIME }} 秒</span>
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="bg-white rounded-lg shadow p-6">
+                    <h3 class="text-lg font-semibold mb-4 text-gray-800">AI角色配置</h3>
+                    <div class="space-y-4">
+                        {% for role_id, role_info in AI_ROLES.items() %}
+                        <div>
+                            <h4 class="font-medium text-gray-800">{{ role_info.name }}</h4>
+                            <p class="text-sm text-gray-600 mt-1">{{ role_info.prompt }}</p>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- 页脚 -->
+    <footer class="bg-gray-800 text-white py-8">
+        <div class="container mx-auto px-4">
+            <div class="flex flex-col md:flex-row justify-between items-center">
+                <div class="mb-4 md:mb-0">
+                    <p class="text-sm">© 2025 交小荣智能教务系统. 保留所有权利.</p>
+                </div>
+                <div class="flex space-x-6">
+                    <a href="#" class="text-gray-300 hover:text-white transition-colors">
+                        <i class="fa fa-question-circle"></i> 帮助
+                    </a>
+                    <a href="#" class="text-gray-300 hover:text-white transition-colors">
+                        <i class="fa fa-file-text-o"></i> 文档
+                    </a>
+                    <a href="#" class="text-gray-300 hover:text-white transition-colors">
+                        <i class="fa fa-envelope-o"></i> 联系我们
+                    </a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // 模拟系统状态数据更新
+        function updateSystemStatus() {
+            // 随机生成一些模拟数据
+            const activeSessions = Math.floor(Math.random() * 50);
+            const totalSessions = Math.floor(Math.random() * 500) + 50;
+            const systemLoad = Math.floor(Math.random() * 70) + 10;
+            const responseTime = Math.floor(Math.random() * 200) + 50;
+            
+            // 更新DOM
+            document.getElementById('active-sessions').textContent = activeSessions;
+            document.getElementById('total-sessions').textContent = totalSessions;
+            document.getElementById('system-load').textContent = `${systemLoad}%`;
+            document.getElementById('response-time').textContent = `${responseTime}ms`;
+            
+            // 随机模拟Redis状态（实际应用中应从后端获取真实状态）
+            const redisStatusEl = document.getElementById('redis-status');
+            if (Math.random() > 0.95) {
+                redisStatusEl.textContent = '连接断开';
+                redisStatusEl.classList.add('text-red-600');
+                redisStatusEl.classList.remove('text-gray-600');
+            } else {
+                redisStatusEl.textContent = '已连接';
+                redisStatusEl.classList.remove('text-red-600');
+                redisStatusEl.classList.add('text-gray-600');
+            }
+        }
+        
+        // 初始化页面
+        document.addEventListener('DOMContentLoaded', function() {
+            // 初始更新一次状态
+            updateSystemStatus();
+            
+            // 每5秒更新一次系统状态
+            setInterval(updateSystemStatus, 5000);
+            
+            // 显示当前时间
+            function updateDateTime() {
+                const now = new Date();
+                const dateTimeStr = now.toLocaleString();
+                document.getElementById('current-datetime').textContent = dateTimeStr;
+            }
+            
+            updateDateTime();
+            setInterval(updateDateTime, 60000);
+        });
+    </script>
+</body>
+</html>
