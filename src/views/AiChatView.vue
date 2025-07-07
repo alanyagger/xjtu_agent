@@ -304,10 +304,10 @@ onBeforeUnmount(() => {
         </div>
         <!-- 聊天内容 -->
         <div class="ai-chat-content-box init-box">
-          <div class="ai-chat-title">AI助手</div>
-          <div class="ai-chat-text">能够学习和理解人类的语言，进行多轮对话</div>
+          <div class="ai-chat-title">交小荣</div>
+          <div class="ai-chat-text">帮助学生快速获取教务信息</div>
           <div class="ai-chat-text">
-            回答问题，高效便捷地帮助人们获取信息、知识和灵感
+           所有数据均从ehall大厅获取 使用前请登录
           </div>
         </div>
       </li>
