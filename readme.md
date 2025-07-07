@@ -22,6 +22,10 @@ Evironment dependencies can be **downloaded** from provided links in the table b
     <td>conda</td>
     <td><a href="https://repo.anaconda.com/archive/">Anaconda</a></td>
   </tr>
+  <tr>
+    <td>Redis</td>
+    <td><a href="https://repo.anaconda.com/archive/">Redis</a></td>
+  </tr>
 </table>
 
 ## How to run:
