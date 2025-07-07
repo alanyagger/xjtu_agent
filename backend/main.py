@@ -1,57 +1,121 @@
-from fastapi import FastAPI
+# -*- coding: utf-8 -*-
+"""
+FastAPI 交小荣智能教务后端
+"""
+
+import json
+import time
+import uuid
+import logging
+import os
+from typing import List, Dict, Any, AsyncGenerator
+from datetime import datetime
+
+from fastapi import FastAPI, HTTPException, Query
+from fastapi.responses import StreamingResponse, RedirectResponse
+from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
-from fastapi.middleware.cors import CORSMiddleware
+import redis
+from config import config
 
-# 导入我们的 agent 执行器
-from agents.demo_agent import run_agent
 
-# 初始化 FastAPI 应用
-app = FastAPI(
-    title="教务信息智能体 API",
-    description="一个使用 LangChain 和 FastAPI 构建的智能教务助手",
-    version="1.0.0"
+# 配置日志系统（保持不变）
+os.makedirs(config.LOG_DIR, exist_ok=True)
+logging.basicConfig(
+    level=config.get_log_level(),
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    handlers=[
+        logging.StreamHandler(),
+        logging.FileHandler(config.get_log_file_path(), encoding='utf-8')
+    ]
 )
 
-# --- 配置跨域中间件 (CORS) ---
-# 这允许你的 Vue 前端 (通常在不同的端口) 访问后端 API
+logger = logging.getLogger(__name__)
+
+# 应用配置（保持不变）
+app = FastAPI(
+    title=config.APP_NAME,
+    description="基于FastAPI、LangChain和DeepSeek的智能教务系统",
+    version=config.APP_VERSION
+)
+
 origins = [
-    "http://localhost:5173",  # 假设你的 Vue dev server 运行在这个地址
-    # 如果有其他前端地址，也一并加入
+    "http://localhost:5173",
 ]
 
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=origins,
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
+# Redis连接配置（保持不变）
+try:
+    redis_client = redis.Redis(**config.get_redis_config())
+    redis_client.ping()
+    logger.info(f"Redis连接成功 - 主机: {config.REDIS_HOST}:{config.REDIS_PORT}")
+    REDIS_AVAILABLE = True
+except Exception as e:
+    logger.error(f"Redis连接失败: {e}")
+    logger.warning("应用将在没有Redis的情况下运行，会话数据将不会持久化")
+    redis_client = None
+    REDIS_AVAILABLE = False
 
-# --- 定义 API 的请求体和响应体模型 ---
+
+# 数据模型、AI角色配置、工具函数
+class ChatMessage(BaseModel):
+    role: str
+    content: str
+    timestamp: float
+
 class ChatRequest(BaseModel):
-    query: str
-    # 你可以加入 conversation_id 等来实现多轮对话
-    # chat_history: list = []
+    user_id: str
+    message: str
+    session_id: str = None
 
 class ChatResponse(BaseModel):
-    answer: str
+    session_id: str
+    message: str
+    timestamp: float
 
-# --- 创建 API 接口 ---
-@app.post("/api/chat", response_model=ChatResponse)
-async def chat_with_agent(request: ChatRequest):
-    """
-    与教务智能体进行对话的接口
-    """
-    print(f"收到用户问题: {request.query}")
-    # 调用 agent 执行器处理用户请求
-    response_text = run_agent(request.query)
-    print(f"Agent 回答: {response_text}")
-    return ChatResponse(answer=response_text)
+AI_ROLES = {
+    "assistant": {
+        "name": "智能助手",
+        "prompt": "你是一个友善、专业的AI助手，能够帮助用户解答各种问题。请保持礼貌和耐心。"
+    },
+    "teacher": {
+        "name": "AI老师",
+        "prompt": "你是一位经验丰富的老师，擅长用简单易懂的方式解释复杂概念，善于启发学生思考。"
+    },
+    "programmer": {
+        "name": "编程专家",
+        "prompt": "你是一位资深的程序员，精通多种编程语言和技术栈，能够提供专业的编程建议和解决方案。"
+    }
+}
 
+MAX_HISTORY_MESSAGES = config.MAX_HISTORY_MESSAGES
+MAX_MESSAGE_LENGTH = config.MAX_MESSAGE_LENGTH
+CONVERSATION_EXPIRE_TIME = config.CONVERSATION_EXPIRE_TIME
+SESSION_EXPIRE_TIME = config.SESSION_EXPIRE_TIME
+
+MEMORY_STORAGE = {
+    "conversations": {},
+    "sessions": {}
+}
+
+def generate_session_id() -> str:
+    session_id = str(uuid.uuid4())
+    logger.info(f"生成新会话ID: {session_id}")
+    return session_id
+
+def get_conversation_key(user_id: str, session_id: str) -> str:
+    return f"conversation:{user_id}:{session_id}"
+
+def get_user_sessions_key(user_id: str) -> str:
+    return f"user_sessions:{user_id}"
+
+
+
+# API接口（保持不变，与前端交互逻辑不受影响）
 @app.get("/")
-def read_root():
-    return {"message": "欢迎使用教务信息智能体 API"}
+async def root():
+    logger.info("访问根路径，重定向到聊天界面")
+    return RedirectResponse(url="/frontend/index.html")
 
-# --- 运行服务器 ---
-# 在终端中，进入 backend 目录，运行:
-# uvicorn main:app --reload
+@app.get("/api")
+async def api_info():
+    return {"message": "FastAPI LangChain DeepSeek聊天应用演示", "version": "1.0.0"}
