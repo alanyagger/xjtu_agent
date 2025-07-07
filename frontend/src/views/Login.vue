@@ -472,6 +472,9 @@ const handleSocialLogin = (type: string) => {
           }
           
           .forgot-password {
+            position: absolute;
+            right: 0; 
+            transform: translateX(0);
             color: #409eff;
             font-size: 14px;
             text-decoration: none;
