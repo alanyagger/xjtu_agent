@@ -30,5 +30,5 @@ npm install
 npm run dev
 ```
 111test
-123456
+1234567
 abcd
