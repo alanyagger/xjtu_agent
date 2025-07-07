@@ -1,4 +1,9 @@
 frontend/node_modules
 backend/.env
+<<<<<<< HEAD
 node_modules
 backend/logs
+=======
+*.pyc
+__pycache__/
+>>>>>>> be22b448313f441e5640edd6f29f89918819fdd7
