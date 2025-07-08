@@ -4,21 +4,19 @@ import subprocess
 from langchain.tools import tool
 from dotenv import load_dotenv
 
-load_dotenv()
+# 明确加载上一级目录下的 .env 文件
+load_dotenv(os.path.join(os.path.dirname(__file__), "..", ".env"))
 
 USERNAME = os.getenv("EHALL_USERNAME")
 PASSWORD = os.getenv("EHALL_PASSWORD")
 
+if not USERNAME or not PASSWORD:
+    raise ValueError("请在 .env 文件中设置 EHALL_USERNAME 和 EHALL_PASSWORD")
 
 # --- 工具函数：调用 get_data.py 并获取输出文件 ---
 def call_get_data(func_name, extra_args=None):
-    """
-    调用 get_data.py 获取数据
-    :param func_name: 要调用的功能，如 "空闲教室"
-    :param extra_args: 传递给脚本的附加参数，如 {"--term": "2024-2025-2"}
-    :return: 加载的 JSON 数据或错误信息
-    """
-    args = ["python", "get_data.py", "--username", USERNAME, "--password", PASSWORD, "--func", func_name]
+    script_path = os.path.join(os.path.dirname(__file__), "get_data.py")
+    args = ["python", script_path, "--username", USERNAME, "--password", PASSWORD, "--func", func_name]
     
     if extra_args:
         for k, v in extra_args.items():

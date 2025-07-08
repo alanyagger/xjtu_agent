@@ -4,6 +4,27 @@
 个人课表查询、全校课表查询、课程查询、成绩查询、空闲教室查询
 
 
+#### 7.8更新
+支持使用prompt查询
+
+保存学号和密码至.env下，如
+```bash
+EHALL_USERNAME=your uid
+EHALL_PASSWORD=your password
+```
+
+```bash
+# 进入backend/agents
+python demo.py
+
+你好，我是教务助手，有什么可以帮你的吗？（输入 exit 退出）
+You: 请查询我的成绩
+```
+
+原始json文件将保存在同级文件夹下
+
+
+
 
 #### how to run:
 Please **download** driver first: 
