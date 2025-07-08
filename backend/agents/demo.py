@@ -14,11 +14,6 @@ from langchain.agents import create_openai_tools_agent, AgentExecutor
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 from backend.config import config
 # 导入我们上一步创建的工具
-<<<<<<< HEAD
-#from tools.ehall_tools import get_current_semester_courses, get_grades_by_semester
-=======
-from backend.tools.ehall_tools import get_current_semester_courses, get_grades_by_semester
->>>>>>> 93b9a7dd2b41af3d0f97b08e25b8c90a00b4d2d8
 
 
 class EhallAgent:
