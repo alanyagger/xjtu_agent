@@ -3,6 +3,7 @@ backend/.env
 <<<<<<< HEAD
 node_modules
 backend/logs
+backend/logs/app.log
 =======
 *.pyc
 __pycache__/
