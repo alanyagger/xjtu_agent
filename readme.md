@@ -29,6 +29,10 @@ Evironment dependencies can be **downloaded** from provided links in the table b
     <td>Redis</td>
     <td><a href="https://repo.anaconda.com/archive/">Redis</a></td>
   </tr>
+  <tr>
+    <td>Chrome Driver</td>
+    <td><a href="https://developer.chrome.com/docs/chromedriver">Chrome</a></td>
+  </tr>
 </table>
 
 ## How to run:
