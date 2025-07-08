@@ -4,6 +4,8 @@
 *.pyd
 __pycache__/
 *.so
+backend/*.pyc
+backend/tools/__pycache__/
 
 # 环境变量文件
 .env
