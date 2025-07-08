@@ -17,21 +17,39 @@ if not USERNAME or not PASSWORD:
 def call_get_data(func_name, extra_args=None):
     script_path = os.path.join(os.path.dirname(__file__), "get_data.py")
     args = ["python", script_path, "--username", USERNAME, "--password", PASSWORD, "--func", func_name]
-    
     if extra_args:
         for k, v in extra_args.items():
             args.extend([k, v])
-
+    env = os.environ.copy()
+    env["PYTHONIOENCODING"] = "utf-8"
+    # print(f"执行命令: {' '.join(args)}")
+    # print(f"当前工作目录: {os.getcwd()}")
+    
     try:
-        result = subprocess.run(args, capture_output=True, text=True, check=True)
+        result = subprocess.run(
+            args, 
+            capture_output=True, 
+            text=True, 
+            check=True,
+            timeout=300,  # 设置超时时间，避免脚本卡死
+            env=env
+        )
+        
         output_file = f"{func_name}_data.json"
+        
         if os.path.exists(output_file):
             with open(output_file, "r", encoding="utf-8") as f:
                 return json.load(f)
         else:
-            return {"error": "没有找到输出文件，可能脚本内部出错"}
+            # 列出当前目录下的所有文件，帮助定位问题
+            current_files = os.listdir('.')
+            return {"error": "没有找到输出文件，可能脚本内部出错", "cwd_files": current_files}
     except subprocess.CalledProcessError as e:
-        return {"error": f"调用脚本失败: {e.stderr}"}
+        return {"error": f"调用脚本失败: {e.stderr}", "returncode": e.returncode}
+    except subprocess.TimeoutExpired:
+        return {"error": "脚本执行超时"}
+    except Exception as e:
+        return {"error": f"未知错误: {str(e)}"}
 
 
 # --- LangChain 工具函数封装 ---
@@ -60,7 +78,7 @@ def get_grades() -> dict:
 @tool
 def get_all_courses() -> dict:
     """
-    获取全部课程。
+    获取学校开设的全部课程。
     """
     return call_get_data("课程查询", {})
 

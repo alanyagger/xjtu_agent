@@ -106,7 +106,7 @@ class EhallAgent:
 # ---- 本地测试 ----
 if __name__ == '__main__':
     # 创建智能体实例（verbose=True 显示思考过程）
-    agent = EhallAgent(verbose=True)
+    agent = EhallAgent(verbose=False)
     
     print("你好，我是教务助手，有什么可以帮你的吗？（输入 exit 退出）")
     while True:
