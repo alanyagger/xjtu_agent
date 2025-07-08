@@ -308,6 +308,7 @@ const handleLogin = () => {
         });
         // 存Token到localStorage
         localStorage.setItem('token', res.access_token);
+        localStorage.setItem('username', loginForm.username);
         ElMessage.success('登录成功');
         router.push('/aiChat'); // 跳转到聊天页
       } catch (error) {
