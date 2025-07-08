@@ -1,11 +1,7 @@
 frontend/node_modules
 backend/.env
-<<<<<<< HEAD
 node_modules
 backend/logs
-backend/logs/app.log
 backend/user.db
-=======
-*.pyc
-__pycache__/
->>>>>>> be22b448313f441e5640edd6f29f89918819fdd7
+backend/*.pyc
+backend/__pycache__/
