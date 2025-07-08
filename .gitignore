@@ -19,6 +19,7 @@ user.db
 # 日志文件夹
 logs/
 *.log
+backend/logs
 
 # Node.js 依赖
 node_modules/
