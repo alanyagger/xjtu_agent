@@ -4,6 +4,7 @@ backend/.env
 node_modules
 backend/logs
 backend/logs/app.log
+backend/user.db
 =======
 *.pyc
 __pycache__/

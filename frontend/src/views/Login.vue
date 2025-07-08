@@ -307,7 +307,7 @@ const handleLogin = () => {
           password: loginForm.password,
         });
         // 存Token到localStorage
-        localStorage.setItem('token', res.access_token);
+        localStorage.setItem('token', res.data.access_token);
         ElMessage.success('登录成功');
         router.push('/aiChat'); // 跳转到聊天页
       } catch (error) {
