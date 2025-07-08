@@ -195,3 +195,12 @@ AttributeError: module 'bcrypt' has no attribute '__about__'
 2025-07-08 11:00:51,941 - multipart.multipart - DEBUG - Calling on_field_end with no data
 2025-07-08 11:00:51,941 - multipart.multipart - DEBUG - Calling on_end with no data
 >>>>>>> 5b20d33374c165ff22dd3967245103e3d3e7a950
+2025-07-08 11:36:30,484 - __main__ - ERROR - Redis连接失败: Error 10061 connecting to 127.0.0.1:6379. 由于目标计算机积极拒绝，无法连接。.
+2025-07-08 11:36:30,485 - __main__ - WARNING - 应用将在没有Redis的情况下运行，会话数据将不会持久化
+2025-07-08 11:36:30,492 - fastapi - ERROR - Form data requires "python-multipart" to be installed. 
+You can install "python-multipart" with: 
+
+pip install python-multipart
+
+2025-07-08 11:40:54,602 - __main__ - ERROR - Redis连接失败: Error 10061 connecting to 127.0.0.1:6379. 由于目标计算机积极拒绝，无法连接。.
+2025-07-08 11:40:54,602 - __main__ - WARNING - 应用将在没有Redis的情况下运行，会话数据将不会持久化

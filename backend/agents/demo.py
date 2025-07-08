@@ -12,9 +12,9 @@ sys.path.append(backend_dir)
 from langchain_openai import ChatOpenAI
 from langchain.agents import create_openai_tools_agent, AgentExecutor
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
-from config import config
+from backend.config import config
 # 导入我们上一步创建的工具
-from tools.ehall_tools import get_current_semester_courses, get_grades_by_semester
+from backend.tools.ehall_tools import get_current_semester_courses, get_grades_by_semester
 
 
 class EhallAgent:
