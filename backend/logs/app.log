@@ -209,3 +209,4 @@ pip install python-multipart
 2025-07-08 11:40:54,602 - __main__ - ERROR - Redis连接失败: Error 10061 connecting to 127.0.0.1:6379. 由于目标计算机积极拒绝，无法连接。.
 2025-07-08 11:40:54,602 - __main__ - WARNING - 应用将在没有Redis的情况下运行，会话数据将不会持久化
 >>>>>>> 93b9a7dd2b41af3d0f97b08e25b8c90a00b4d2d8
+2025-07-08 15:04:36,080 - main - INFO - Redis连接成功 - 主机: 127.0.0.1:6379
