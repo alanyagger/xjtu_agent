@@ -4,6 +4,8 @@
 *.pyd
 __pycache__/
 *.so
+backend/*.pyc
+backend/tools/__pycache__/
 
 # 环境变量文件
 .env
@@ -19,6 +21,7 @@ user.db
 # 日志文件夹
 logs/
 *.log
+backend/logs
 
 # Node.js 依赖
 node_modules/

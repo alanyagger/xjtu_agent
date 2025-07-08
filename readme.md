@@ -8,6 +8,9 @@ Install dependencies:
 node.js v22.17.0
 conda   v24.9.2
 ```
+```shell
+conda create -n xjtu_agent python=3.12
+```
 Evironment dependencies can be **downloaded** from provided links in the table below:
 <table style="width:100%">
   <tr>
