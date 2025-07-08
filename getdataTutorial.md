@@ -24,7 +24,7 @@ python get_data.py --username 2226124051 --password i_love_coding --func 成绩�
 
 python get_data.py --username 2226124051 --password i_love_coding --func 个人课表 --term 2024-2025-2
 
-python get_data.py --username 2226124051 --password i_love_coding --func 课程查询 --term 2024-2025-3
+python get_data.py --username 2226124051 --password i_love_coding --func 全校课程 --term 2024-2025-3
 ```
 
 The result of the run is shown in ```function_data.json```.
