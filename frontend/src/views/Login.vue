@@ -215,7 +215,7 @@ import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 import { faUser, faLock, faMailBulk as faMail } from '@fortawesome/free-solid-svg-icons';
 import { faWeibo, faWeixin, faGithub } from '@fortawesome/free-brands-svg-icons';
 import { faQq } from '@fortawesome/free-brands-svg-icons'; // QQ图标在brands分类
-
+import { userApi } from '@/api/user'; 
 const router = useRouter();
 
 // 导出图标供模板使用
@@ -297,38 +297,46 @@ const registerFormRef = ref();
 
 // 登录处理
 const handleLogin = () => {
-  (loginFormRef.value as any)?.validate((valid: boolean) => {
+  (loginFormRef.value as any)?.validate(async (valid: boolean) => {
     if (valid) {
       loginLoading.value = true;
-      
-      // 模拟登录请求
-      setTimeout(() => {
-        loginLoading.value = false;
+      try {
+        // 调用登录接口（注意：后端/token需要form-data，axios会自动处理）
+        const res = await userApi.login({
+          username: loginForm.username,
+          password: loginForm.password,
+        });
+        // 存Token到localStorage
+        localStorage.setItem('token', res.access_token);
         ElMessage.success('登录成功');
-        router.push('/aiChat');
-      }, 1500);
-    } else {
-      ElMessage.warning('请完善登录信息');
-      return false;
+        router.push('/aiChat'); // 跳转到聊天页
+      } catch (error) {
+        console.error('登录失败', error);
+      } finally {
+        loginLoading.value = false;
+      }
     }
   });
-};
+}
 
 // 注册处理
 const handleRegister = () => {
-  (registerFormRef.value as any)?.validate((valid: boolean) => {
+  (registerFormRef.value as any)?.validate(async (valid: boolean) => {
     if (valid) {
       registerLoading.value = true;
-      
-      // 模拟注册请求
-      setTimeout(() => {
-        registerLoading.value = false;
+      try {
+        await userApi.register({
+          username: registerForm.username,
+          email: registerForm.email,
+          password: registerForm.password,
+        });
         ElMessage.success('注册成功，请登录');
-        activeTab.value = 'login';
-      }, 1500);
-    } else {
-      ElMessage.warning('请完善注册信息');
-      return false;
+        activeTab.value = 'login'; // 切回登录页
+      } catch (error) {
+        console.error('注册失败', error);
+      } finally {
+        registerLoading.value = false;
+      }
     }
   });
 };

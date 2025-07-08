@@ -26,6 +26,12 @@ class Config:
     REDIS_PASSWORD: Optional[str] = os.getenv('REDIS_PASSWORD')
     REDIS_DB: int = int(os.getenv('REDIS_DB', 0))
     
+    SECRET_KEY = "your-very-secure-secret-key"
+
+    @classmethod
+    def get_secret_key(cls) -> str:
+        return cls.SECRET_KEY
+
     # Redis过期时间配置（秒）
     CONVERSATION_EXPIRE_TIME: int = int(os.getenv('CONVERSATION_EXPIRE_TIME', 7 * 24 * 3600))  # 7天
     SESSION_EXPIRE_TIME: int = int(os.getenv('SESSION_EXPIRE_TIME', 30 * 24 * 3600))  # 30天
