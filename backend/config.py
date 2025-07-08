@@ -42,6 +42,10 @@ class Config:
     OPENAI_MODEL: str = os.getenv('OPENAI_MODEL', '')
     OPENAI_MAX_TOKENS: int = int(os.getenv('OPENAI_MAX_TOKENS', 1000))
     OPENAI_TEMPERATURE: float = float(os.getenv('OPENAI_TEMPERATURE', 0.7))
+
+    # DeepSeek配置
+    DEEPSEEK_API_KEY: str = os.getenv('DEEPSEEK_API_KEY', '')
+    DEEPSEEK_BASE_URL: str = os.getenv('DEEPSEEK_BASE_URL', '')
     
     # 对话配置
     MAX_HISTORY_MESSAGES: int = int(os.getenv('MAX_HISTORY_MESSAGES', 20))  # 最大历史消息数
