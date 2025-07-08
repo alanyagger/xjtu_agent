@@ -14,7 +14,7 @@ from langchain.agents import create_openai_tools_agent, AgentExecutor
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 from config import config
 # 导入我们上一步创建的工具
-from tools.ehall_tools import get_current_semester_courses, get_grades_by_semester
+#from tools.ehall_tools import get_current_semester_courses, get_grades_by_semester
 
 
 class EhallAgent:
@@ -41,8 +41,8 @@ class EhallAgent:
     
     def _get_tools(self) -> list:
         """获取工具列表"""
-        return [get_current_semester_courses, get_grades_by_semester]
-    
+        return []  #[get_current_semester_courses, get_grades_by_semester]
+
     def _create_prompt(self) -> ChatPromptTemplate:
         """创建提示词模板"""
         prompt_template = """
