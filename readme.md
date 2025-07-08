@@ -29,10 +29,12 @@ Evironment dependencies can be **downloaded** from provided links in the table b
 </table>
 
 ## How to run:
+run frontend ./frontend
 ```bash
 npm install
 npm run dev
 ```
-111test
-1234567
-abcd
+run backend ./backend
+```bash
+python start_server.py
+```
