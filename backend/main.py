@@ -22,6 +22,7 @@ from pydantic import BaseModel, EmailStr, field_validator
 import redis
 from config import config
 from passlib.context import CryptContext
+from agents.demo import EhallAgent  
 
 # ---------- 新增数据库配置（用户表） ----------
 SQLALCHEMY_DATABASE_URL = "sqlite:///./users.db"  # 数据库文件存在backend目录
@@ -166,6 +167,14 @@ except Exception as e:
     redis_client = None
     REDIS_AVAILABLE = False
 
+# 初始化LangChain的DeepSeek模型
+try:
+    # 初始化LangChain的DeepSeek聊天模型
+    ehall_agent = EhallAgent(verbose=False)
+    logger.info("LangChain DeepSeek模型初始化成功")
+except Exception as e:
+    logger.error(f"LangChain初始化失败: {e}")
+    raise
 
 # 数据模型、AI角色配置、工具函数
 class ChatMessage(BaseModel):
@@ -210,6 +219,8 @@ def get_conversation_key(user_id: str, session_id: str) -> str:
 
 def get_user_sessions_key(user_id: str) -> str:
     return f"user_sessions:{user_id}"
+
+
 
 
 # ---------- 新增接口（注册、登录） ----------
