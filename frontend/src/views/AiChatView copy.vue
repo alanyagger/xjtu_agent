@@ -143,157 +143,100 @@
 <script lang="ts" setup>
 import { UserFilled, Delete, Loading, DocumentCopy } from "@element-plus/icons-vue";
 import { onBeforeUnmount, onMounted, ref, watch } from "vue";
+import {
+  getWebsocketUrl,
+  ChatItem,
+  WSReqParams,
+  WSResParams,
+  wsSendMsgFormat,
+} from "@/ts/AiChatWebsocket.ts";
+import { sparkConfig } from "@/config/config.ts";
 import { ElMessage } from "element-plus";
 import { copyToClipboard } from "@/utils/commonUtil.ts";
-import { getToken } from "@/utils/auth.ts"; // 导入获取token的工具函数
 
 // 扩展ChatItem类型，增加历史记录关联ID
-interface ExtendedChatItem {
-  role: string;
-  content: string;
-  historyId?: string;
+interface ExtendedChatItem extends ChatItem {
+  historyId?: string; // 用于关联历史记录的唯一ID
 }
 
-// 历史记录数据结构
+// 历史记录数据结构：包含问题、关联ID和对应对话索引
 interface HistoryItem {
-  id: string;
-  question: string;
-  userIndex: number;
+  id: string; // 唯一ID
+  question: string; // 问题内容
+  userIndex: number; // 用户提问在chatList中的索引
 }
 
 // 状态定义
+let sparkWS: WebSocket;
 let chatList = ref<ExtendedChatItem[]>([]);
 let loadingIndex = ref<number | null | undefined>();
 let problemText = ref<string>("");
-let sendBtnDisabled = ref(false);
+let wsMsgReceiveStatus = ref<"receiveIng" | "receiveFinished">();
 const maxCharCount = ref<number>(300);
+let sendBtnDisabled = ref(false);
 
-// 历史记录相关
-let chatHistory = ref<HistoryItem[]>([]);
-let currentHistoryId = ref<string | null>(null);
-let currentSessionId = ref<string | null>(null); // 新增：会话ID，用于保持上下文
+// 历史记录相关（修改核心）
+let chatHistory = ref<HistoryItem[]>([]); // 改为存储完整历史信息
+let currentHistoryId = ref<string | null>(null); // 当前选中的历史记录ID
 
-// 生成唯一ID
+// 生成唯一ID用于关联历史记录和对话
 const generateId = () => {
   return Date.now().toString(36) + Math.random().toString(36).substr(2, 5);
 };
 
-// 发送问题（核心修改）
+// 发送问题（修改历史记录保存逻辑）
 const sendQuestion = () => {
   if (sendBtnDisabled.value || !problemText.value.trim()) {
     if (!problemText.value.trim()) ElMessage.warning("请输入内容");
     return;
   }
 
-  // 生成唯一ID关联当前对话
-  const historyId = generateId();
-  // 保存用户提问到对话列表
-  const userIndex = chatList.value.length;
-  chatList.value.push({
-    role: "user",
-    content: problemText.value,
-    historyId
-  });
-
-  // 保存到历史记录
-  saveToHistory({
-    id: historyId,
-    question: problemText.value,
-    userIndex
-  });
-
-  const userMessage = problemText.value;
-
-  sendBtnDisabled.value = true;
-  problemText.value = "";
-  // 调用后端/chat/接口
-  callChatApi(historyId, userMessage);
-};
-
-// 调用后端/chat/接口（核心新增）
-const callChatApi = async (historyId: string, userMessage: string) => {
-  try {
-    const token = getToken();
-    console.log("当前token:", token);
-    if (!token) {
-      ElMessage.error("请先登录");
-      sendBtnDisabled.value = false;
-      return;
-    }
-
-    // 准备请求数据
-    const requestData = {
-      user_id: localStorage.getItem("userId") || "anonymous", // 从登录信息中获取用户ID
-      message: userMessage,
-      session_id: currentSessionId.value || "" // 传递当前会话ID保持上下文
-    };
-
-    console.log("当前用户", localStorage.getItem("userId"));
-    console.log("请求问题:", userMessage);
-
-    // 添加AI回复占位符
-    const aiIndex = chatList.value.length;
+  if (wsMsgReceiveStatus.value !== "receiveIng") {
+    // 生成唯一ID关联当前对话
+    const historyId = generateId();
+    // 保存用户提问到对话列表
+    const userIndex = chatList.value.length;
     chatList.value.push({
-      role: "assistant",
-      content: "",
-      historyId
-    });
-    loadingIndex.value = aiIndex;
-
-    // 调用后端接口
-    const response = await fetch("http://localhost:8000/chat/", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${token}` // 添加认证头
-      },
-      body: JSON.stringify(requestData)
+      role: "user",
+      content: problemText.value,
+      historyId // 关联历史记录ID
     });
 
-    console.log("请求数据:", requestData);
-    console.log("响应状态:", response.status);
+    // 保存到历史记录
+    saveToHistory({
+      id: historyId,
+      question: problemText.value,
+      userIndex // 记录用户提问在chatList中的索引
+    });
 
-    if (!response.ok) {
-      throw new Error(`请求失败: ${response.statusText}`);
-    }
-
-    const result = await response.json();
-    // 更新会话ID（首次请求会生成新ID，后续保持不变）
-    currentSessionId.value = result.session_id;
-    // 更新AI回复内容
-    chatList.value[aiIndex].content = result.message;
-    ElMessage.success("回复成功");
-
-  } catch (error) {
-    console.error("聊天接口调用失败:", error);
-    ElMessage.error("获取回复失败，请重试");
-    // 移除AI回复占位符
-    if (chatList.value.length > 0) {
-      chatList.value.pop();
-    }
-  } finally {
-    loadingIndex.value = null;
-    sendBtnDisabled.value = false;
+    sendBtnDisabled.value = true;
+    problemText.value = "";
+    askSpark(historyId); // 传递ID用于AI回答关联
   }
 };
 
-// 保存到历史记录
+// 保存到历史记录（去重并关联索引）
 const saveToHistory = (history: HistoryItem) => {
+  // 去重逻辑（基于问题内容）
   const isDuplicate = chatHistory.value.some(
     item => item.question === history.question
   );
   if (!isDuplicate) {
+    // 限制历史记录数量
     if (chatHistory.value.length >= 10) chatHistory.value.shift();
     chatHistory.value.push(history);
   }
 };
 
-// 历史记录跳转
+// 点击历史记录跳转对应对话（核心功能）
 const jumpToHistory = (history: HistoryItem) => {
-  currentHistoryId.value = history.id;
+  currentHistoryId.value = history.id; // 高亮当前选中项
+  // 找到对应的用户提问元素
   const targetEl = document.querySelector(`[data-history-id="${history.id}"]`);
   if (targetEl) {
+    // 滚动到目标元素（带平滑动画）
     targetEl.scrollIntoView({ behavior: "smooth", block: "center" });
+    // 高亮目标对话（添加闪烁动画）
     targetEl.classList.add("highlight");
     setTimeout(() => targetEl.classList.remove("highlight"), 2000);
   }
@@ -303,57 +246,65 @@ const jumpToHistory = (history: HistoryItem) => {
 const clearHistory = () => {
   chatHistory.value = [];
   currentHistoryId.value = null;
-  currentSessionId.value = null; // 同时重置会话ID
   ElMessage.success("历史记录已清空");
 };
 
-// 重新回答
-const reReply = (index: number) => {
-  if (sendBtnDisabled.value) return;
-  
-  const targetItem = chatList.value[index];
-  if (targetItem && targetItem.role === "assistant" && index > 0) {
-    const userItem = chatList.value[index - 1];
-    if (userItem && userItem.role === "user") {
-      // 复用用户问题重新发送
-      problemText.value = userItem.content;
-      sendQuestion();
-    }
+// 连接AI（修改传递历史ID）
+const askSpark = (historyId: string) => {
+  const wsUrl = getWebsocketUrl(sparkConfig);
+  if (!("WebSocket" in window)) {
+    ElMessage.error("不支持WebSocket");
+    return;
   }
+
+  sparkWS = new WebSocket(wsUrl as string);
+  sparkWS.onopen = () => {
+    const sendData: WSReqParams = wsSendMsgFormat(sparkConfig, chatList.value);
+    sparkWS.send(JSON.stringify(sendData));
+    // AI回答关联相同的历史ID
+    chatList.value.push({
+      role: "assistant",
+      content: "",
+      historyId
+    });
+    loadingIndex.value = chatList.value.length - 1;
+  };
+
+  sparkWS.onmessage = (res: MessageEvent) => {
+    const resObj: WSResParams = JSON.parse(res.data);
+    if (resObj.header.code !== 0) {
+      ElMessage.error("提问失败");
+      sparkWS.close();
+      return;
+    }
+    wsMsgReceiveHandle(resObj);
+  };
+
+  sparkWS.onerror = () => ElMessage.error("连接失败");
+  sparkWS.onclose = () => {};
 };
 
-// 复制记录
-const copyRecord = (item: { content: any }) => {
-  copyToClipboard({
-    content: item.content,
-    success: () => ElMessage.success("复制成功"),
-    error: () => ElMessage.error("复制失败")
+// 处理AI响应（保持不变）
+const wsMsgReceiveHandle = (res: WSResParams) => {
+  const dataArray = res?.payload?.choices?.text || [];
+  dataArray.forEach(item => {
+    if (item?.content != null) {
+      chatList.value[chatList.value.length - 1].content += item.content;
+    }
   });
-};
 
-// 处理代码复制成功
-const handleCopyCodeSuccess = () => ElMessage.success("复制成功");
-
-// 删除记录
-const deleteRecord = (index: number) => {
-  if (!sendBtnDisabled.value) {
-    const element = document.querySelector(`[data-index="${index}"]`);
-    if (element) {
-      element.classList.add("fade-out");
-      setTimeout(() => {
-        chatList.value.splice(index, 1);
-        // 如果删除的是用户消息，同步删除对应的AI回复
-        if (index < chatList.value.length && chatList.value[index].role === "assistant") {
-          chatList.value.splice(index, 1);
-        }
-      }, 300);
-    } else {
-      chatList.value.splice(index, 1);
-    }
+  if (res.payload.choices.status === 0) {
+    problemText.value = "";
+    wsMsgReceiveStatus.value = "receiveIng";
+  } else if (res.payload.choices.status === 2) {
+    wsMsgReceiveStatus.value = "receiveFinished";
+    loadingIndex.value = null;
+    sendBtnDisabled.value = false;
+    sparkWS.close();
   }
 };
 
-// 滚动相关
+// 滚动相关（保持基础功能，新增高亮样式）
 let chatListObserver: MutationObserver;
 const aiChatListRef = ref();
 
@@ -369,7 +320,58 @@ const scrollHandle = (val: number) => {
   aiChatListRef.value?.scrollTo({ top: val, behavior: "smooth" });
 };
 
-// 监听输入长度
+onMounted(() => {
+  if (aiChatListRef.value) createMutationServer(aiChatListRef.value);
+});
+
+// 其他功能（复制、删除、重新回答等保持不变）
+const copyRecord = (item: { content: any }) => {
+  copyToClipboard({
+    content: item.content,
+    success: () => ElMessage.success("复制成功"),
+    error: () => ElMessage.error("复制失败")
+  });
+};
+
+const handleCopyCodeSuccess = () => ElMessage.success("复制成功");
+
+const deleteRecord = (index: number) => {
+  if (!sendBtnDisabled.value) {
+    const element = document.querySelector(`[data-index="${index}"]`);
+    if (element) {
+      element.classList.add("fade-out");
+      setTimeout(() => chatList.value.splice(index, 1), 300);
+    } else {
+      chatList.value.splice(index, 1);
+    }
+  }
+};
+
+const reReply = (index: number) => {
+  if (wsMsgReceiveStatus.value !== "receiveIng") {
+    if (chatList.value.length - 1 === index) {
+      deleteRecord(index);
+      sendBtnDisabled.value = true;
+      askSpark(generateId());
+    } else {
+      let i = index - 1;
+      while (i >= 0) {
+        if (chatList.value[i].role === "user" && chatList.value[i].content) {
+          chatList.value.push({
+            role: "user",
+            content: chatList.value[i].content,
+            historyId: generateId()
+          });
+          sendBtnDisabled.value = true;
+          askSpark(generateId());
+          break;
+        }
+        i--;
+      }
+    }
+  }
+};
+
 const problemTextWatcher = watch(
   () => problemText.value,
   () => {
@@ -379,25 +381,11 @@ const problemTextWatcher = watch(
   }
 );
 
-// 生命周期
-onMounted(() => {
-  if (aiChatListRef.value) createMutationServer(aiChatListRef.value);
-  // 初始化时尝试从本地存储恢复会话
-  const savedSessionId = localStorage.getItem("chatSessionId");
-  if (savedSessionId) {
-    currentSessionId.value = savedSessionId;
-  }
-});
-
 onBeforeUnmount(() => {
   problemTextWatcher();
   if (chatListObserver) chatListObserver.disconnect();
-  // 保存会话ID到本地存储
-  if (currentSessionId.value) {
-    localStorage.setItem("chatSessionId", currentSessionId.value);
-  }
+  if (sparkWS) sparkWS.close();
 });
-
 </script>
 
 <style lang="scss" scoped>

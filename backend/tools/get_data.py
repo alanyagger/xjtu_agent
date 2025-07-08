@@ -11,7 +11,7 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 
 LOGIN_URL = "https://ehall.xjtu.edu.cn/login"
-CHROME_DRIVER_PATH = "D:\\study\\internship_2025\\chromedriver-win64\\chromedriver.exe" #官网下载chrome驱动，替换为自己的驱动路径
+CHROME_DRIVER_PATH = "D:\\chromedriver-win64\\chromedriver.exe" #官网下载chrome驱动，替换为自己的驱动路径
 
 campus_map = {
     "兴庆校区": "1",
