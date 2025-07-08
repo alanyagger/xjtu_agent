@@ -38,8 +38,10 @@
             </div>
             <div class="ai-chat-content-box init-box">
               <div class="ai-chat-title">交小荣</div>
-              <div class="ai-chat-text">帮助学生快速获取教务信息</div>
-              <div class="ai-chat-text">所有数据均从ehall大厅获取 使用前请登录</div>
+              <div class="ai-chat-text"v-if="!isLoggedIn">当前为未登录状态，可进行简单对话</div>
+              <div class="ai-chat-text"v-if="!isLoggedIn">如需获取教务相关信息，请先登录</div>
+              <div class="ai-chat-text"v-if="isLoggedIn">已登录成功，可就教务信息进行询问</div>
+              <div class="ai-chat-text"v-if="isLoggedIn">所有数据均从ehall大厅获取</div>             
             </div>
           </li>
           <li
@@ -146,6 +148,18 @@ import { onBeforeUnmount, onMounted, ref, watch } from "vue";
 import { ElMessage } from "element-plus";
 import { copyToClipboard } from "@/utils/commonUtil.ts";
 import { getToken } from "@/utils/auth.ts"; // 导入获取token的工具函数
+
+// 新增：登录状态变量
+const isLoggedIn = ref(false);
+
+// 组件挂载时检测登录状态
+onMounted(() => {
+  // 检查localStorage中是否有token（与登录页逻辑一致）
+  const token = localStorage.getItem('token');
+  isLoggedIn.value = !!token; // 存在token则视为已登录
+
+  if (aiChatListRef.value) createMutationServer(aiChatListRef.value);
+});
 
 // 扩展ChatItem类型，增加历史记录关联ID
 interface ExtendedChatItem {
