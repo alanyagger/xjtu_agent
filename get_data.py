@@ -131,19 +131,25 @@ def save_json_to_file(data, filename="xjtu_course.json"):
 
 def selenium_login():
     options = ChromeOptions()
-    # options.add_argument('--headless')
+   
     options.add_argument('--disable-blink-features=AutomationControlled')
+    options.add_argument('--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36')
     options.add_experimental_option("excludeSwitches", ["enable-automation"])
     service = ChromeService(executable_path=CHROME_DRIVER_PATH)
     driver = webdriver.Chrome(service=service, options=options)
+
+    driver.minimize_window()  # 最小化
+    #driver.set_window_position(-2000, 0)
+
     wait = WebDriverWait(driver, 20)
 
     driver.get(LOGIN_URL)
-    time.sleep(2)
+    time.sleep(1)
+    #print(driver.page_source)  # 打印页面 HTML，用于调试
     wait.until(EC.element_to_be_clickable((By.NAME, "username"))).send_keys(USERNAME)
     wait.until(EC.element_to_be_clickable((By.CSS_SELECTOR, 'input[placeholder="请输入密码(Please enter the password)"]'))).send_keys(PASSWORD + Keys.RETURN)
 
-    time.sleep(3)
+    time.sleep(2)
     driver.get("https://ehall.xjtu.edu.cn/jwapp/sys/wdkb/*default/index.do")
     wait_for_mask_disappear(driver, driver.current_url)
     time.sleep(2)
