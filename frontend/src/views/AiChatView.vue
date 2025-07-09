@@ -242,8 +242,8 @@ const callChatApi = async (historyId: string, userMessage: string) => {
       session_id: currentSessionId.value || "" // 传递当前会话ID保持上下文
     };
 
-    console.log("当前用户", localStorage.getItem("userId"));
-    console.log("请求问题:", userMessage);
+    // console.log("当前用户", localStorage.getItem("userId"));
+    // console.log("请求问题:", userMessage);
 
     // 添加AI回复占位符
     const aiIndex = chatList.value.length;
@@ -264,8 +264,8 @@ const callChatApi = async (historyId: string, userMessage: string) => {
       body: JSON.stringify(requestData)
     });
 
-    console.log("请求数据:", requestData);
-    console.log("响应状态:", response.status);
+    // console.log("请求数据:", requestData);
+    // console.log("响应状态:", response.status);
 
     if (!response.ok) {
       throw new Error(`请求失败: ${response.statusText}`);
