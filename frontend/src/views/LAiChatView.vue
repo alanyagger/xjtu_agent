@@ -1,5 +1,12 @@
 <template>
   <div class="ai-chat-view">
+    <!-- 新增头部区域 -->
+    <header class="page-layout-header">
+      <div class="page-layout-row">
+        <HeaderView />
+      </div>
+    </header>
+    
     <div class="chat-container">
       <!-- 左侧历史记录栏 -->
       <div class="history-panel">
@@ -38,8 +45,8 @@
             </div>
             <div class="ai-chat-content-box init-box">
               <div class="ai-chat-title">交小荣</div>
-              <div class="ai-chat-text">帮助学生快速获取教务信息</div>
-              <div class="ai-chat-text">所有数据均从ehall大厅获取 使用前请登录</div>
+              <div class="ai-chat-text">已登录成功，可就教务信息进行询问</div>
+              <div class="ai-chat-text">所有数据均从ehall大厅获取</div>             
             </div>
           </li>
           <li
@@ -50,7 +57,7 @@
             :data-index="index"
             :data-history-id="item.historyId"
           >
-            <!-- 对话内容（与之前保持一致） -->
+            <!-- 对话内容 -->
             <div class="ai-chat-avatar">
               <el-avatar
                 v-if="item.role === 'user'"
@@ -104,7 +111,7 @@
             </div>
           </li>
         </ul>
-        <!-- 文本发送区域（与之前保持一致） -->
+        <!-- 文本发送区域 -->
         <div class="ai-chat-form-wrapper">
           <div class="ai-chat-form-box">
             <textarea
@@ -140,7 +147,9 @@
   </div>
 </template>
 
-<script lang="ts" setup>
+<script setup lang="ts">
+// 导入HeaderView组件
+import HeaderView from "@/components/LHeaderView.vue";
 import { UserFilled, Delete, Loading, DocumentCopy } from "@element-plus/icons-vue";
 import { onBeforeUnmount, onMounted, ref, watch } from "vue";
 import {
@@ -153,6 +162,8 @@ import {
 import { sparkConfig } from "@/config/config.ts";
 import { ElMessage } from "element-plus";
 import { copyToClipboard } from "@/utils/commonUtil.ts";
+
+
 
 // 扩展ChatItem类型，增加历史记录关联ID
 interface ExtendedChatItem extends ChatItem {
@@ -175,8 +186,8 @@ let wsMsgReceiveStatus = ref<"receiveIng" | "receiveFinished">();
 const maxCharCount = ref<number>(300);
 let sendBtnDisabled = ref(false);
 
-// 历史记录相关（修改核心）
-let chatHistory = ref<HistoryItem[]>([]); // 改为存储完整历史信息
+// 历史记录相关
+let chatHistory = ref<HistoryItem[]>([]); // 存储完整历史信息
 let currentHistoryId = ref<string | null>(null); // 当前选中的历史记录ID
 
 // 生成唯一ID用于关联历史记录和对话
@@ -184,7 +195,7 @@ const generateId = () => {
   return Date.now().toString(36) + Math.random().toString(36).substr(2, 5);
 };
 
-// 发送问题（修改历史记录保存逻辑）
+// 发送问题
 const sendQuestion = () => {
   if (sendBtnDisabled.value || !problemText.value.trim()) {
     if (!problemText.value.trim()) ElMessage.warning("请输入内容");
@@ -215,20 +226,16 @@ const sendQuestion = () => {
   }
 };
 
-// 保存到历史记录（去重并关联索引）
+// 保存到历史记录
 const saveToHistory = (history: HistoryItem) => {
-  // 去重逻辑（基于问题内容）
-  const isDuplicate = chatHistory.value.some(
-    item => item.question === history.question
-  );
-  if (!isDuplicate) {
-    // 限制历史记录数量
-    if (chatHistory.value.length >= 10) chatHistory.value.shift();
-    chatHistory.value.push(history);
+  // 限制历史记录数量（最多10条）
+  if (chatHistory.value.length >= 10) {
+    chatHistory.value.shift();
   }
+  chatHistory.value.push(history);
 };
 
-// 点击历史记录跳转对应对话（核心功能）
+// 点击历史记录跳转对应对话
 const jumpToHistory = (history: HistoryItem) => {
   currentHistoryId.value = history.id; // 高亮当前选中项
   // 找到对应的用户提问元素
@@ -238,7 +245,7 @@ const jumpToHistory = (history: HistoryItem) => {
     targetEl.scrollIntoView({ behavior: "smooth", block: "center" });
     // 高亮目标对话（添加闪烁动画）
     targetEl.classList.add("highlight");
-    setTimeout(() => targetEl.classList.remove("highlight"), 2000);
+    setTimeout(() => targetEl.classList.remove("highlight"), 100);
   }
 };
 
@@ -249,7 +256,7 @@ const clearHistory = () => {
   ElMessage.success("历史记录已清空");
 };
 
-// 连接AI（修改传递历史ID）
+// 连接AI
 const askSpark = (historyId: string) => {
   const wsUrl = getWebsocketUrl(sparkConfig);
   if (!("WebSocket" in window)) {
@@ -284,7 +291,7 @@ const askSpark = (historyId: string) => {
   sparkWS.onclose = () => {};
 };
 
-// 处理AI响应（保持不变）
+// 处理AI响应
 const wsMsgReceiveHandle = (res: WSResParams) => {
   const dataArray = res?.payload?.choices?.text || [];
   dataArray.forEach(item => {
@@ -304,7 +311,61 @@ const wsMsgReceiveHandle = (res: WSResParams) => {
   }
 };
 
-// 滚动相关（保持基础功能，新增高亮样式）
+// 重新回答功能（核心修改）
+const reReply = (index: number) => {
+  if (wsMsgReceiveStatus.value !== "receiveIng") {
+    // 1. 找到对应的用户提问内容
+    let userQuestion = '';
+    let i = index - 1;
+    while (i >= 0) {
+      if (chatList.value[i].role === "user") {
+        userQuestion = chatList.value[i].content;
+        break;
+      }
+      i--;
+    }
+
+    if (!userQuestion) {
+      ElMessage.warning("未找到对应的提问内容");
+      return;
+    }
+
+    // 2. 生成新的历史记录ID（模拟新提问）
+    const newHistoryId = generateId();
+    
+    // 3. 添加新的用户提问到聊天列表
+    const newUserIndex = chatList.value.length;
+    chatList.value.push({
+      role: "user",
+      content: userQuestion,
+      historyId: newHistoryId
+    });
+
+    // 4. 在历史记录中添加新项
+    saveToHistory({
+      id: newHistoryId,
+      question: userQuestion,
+      userIndex: newUserIndex
+    });
+
+    // 5. 自动跳转到新添加的提问
+    currentHistoryId.value = newHistoryId;
+    setTimeout(() => {
+      const targetEl = document.querySelector(`[data-history-id="${newHistoryId}"]`);
+      if (targetEl) {
+        targetEl.scrollIntoView({ behavior: "smooth", block: "center" });
+        targetEl.classList.add("highlight");
+        setTimeout(() => targetEl.classList.remove("highlight"), 100);
+      }
+    }, 0);
+
+    // 6. 调用AI接口获取新回答
+    sendBtnDisabled.value = true;
+    askSpark(newHistoryId);
+  }
+};
+
+// 滚动相关
 let chatListObserver: MutationObserver;
 const aiChatListRef = ref();
 
@@ -324,7 +385,7 @@ onMounted(() => {
   if (aiChatListRef.value) createMutationServer(aiChatListRef.value);
 });
 
-// 其他功能（复制、删除、重新回答等保持不变）
+// 复制记录
 const copyRecord = (item: { content: any }) => {
   copyToClipboard({
     content: item.content,
@@ -333,8 +394,10 @@ const copyRecord = (item: { content: any }) => {
   });
 };
 
+// 复制代码成功
 const handleCopyCodeSuccess = () => ElMessage.success("复制成功");
 
+// 删除记录
 const deleteRecord = (index: number) => {
   if (!sendBtnDisabled.value) {
     const element = document.querySelector(`[data-index="${index}"]`);
@@ -347,31 +410,7 @@ const deleteRecord = (index: number) => {
   }
 };
 
-const reReply = (index: number) => {
-  if (wsMsgReceiveStatus.value !== "receiveIng") {
-    if (chatList.value.length - 1 === index) {
-      deleteRecord(index);
-      sendBtnDisabled.value = true;
-      askSpark(generateId());
-    } else {
-      let i = index - 1;
-      while (i >= 0) {
-        if (chatList.value[i].role === "user" && chatList.value[i].content) {
-          chatList.value.push({
-            role: "user",
-            content: chatList.value[i].content,
-            historyId: generateId()
-          });
-          sendBtnDisabled.value = true;
-          askSpark(generateId());
-          break;
-        }
-        i--;
-      }
-    }
-  }
-};
-
+// 监听输入长度
 const problemTextWatcher = watch(
   () => problemText.value,
   () => {
@@ -389,13 +428,43 @@ onBeforeUnmount(() => {
 </script>
 
 <style lang="scss" scoped>
-// 基础样式保持不变，新增历史记录跳转高亮样式
-.ai-chat-list {
-  .ai-chat-item {
-    // 新增：历史记录跳转高亮动画
-    &.highlight {
-      animation: highlight 2s ease-in-out;
-    }
+// 头部样式（从App.vue迁移）
+.page-layout-header {
+  display: flex;
+  justify-content: center;
+  min-width: 760px;
+  height: 66px;
+  background: #fff;
+  border-bottom: 1px solid #eee;
+  box-shadow: 0 2px 8px 0 rgba(2, 24, 42, 0.1);
+}
+
+.page-layout-row {
+  width: 1440px;
+  display: flex;
+  background: #fff;
+  flex-direction: column;
+}
+
+// 调整聊天容器样式（减去头部高度）
+.ai-chat-view {
+  display: flex;
+  flex-direction: column; 
+  justify-content: center;
+  background-color: #f0f7ff;
+  min-height: 100vh;
+  box-sizing: border-box;
+
+  .chat-container {
+    display: flex;
+    width: 100%;
+    max-width: 1400px;
+    /* 高度调整为减去头部高度 */
+    height: calc(100vh - 66px);
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.08);
+    border-radius: 12px;
+    overflow: hidden;
+    margin: 0 auto; /* 居中显示 */
   }
 }
 
@@ -416,26 +485,6 @@ onBeforeUnmount(() => {
   50% {
     box-shadow: 0 0 0 5px rgba(64, 150, 255, 0.2); // 闪烁边框效果
   }
-}
-
-
-.ai-chat-view {
-  display: flex;
-  justify-content: center;
-  background-color: #f0f7ff;
-  min-height: 100vh;
-  padding: 20px 0;
-  box-sizing: border-box;
-}
-
-.chat-container {
-  display: flex;
-  width: 100%;
-  max-width: 1400px;
-  height: calc(100vh - 40px);
-  box-shadow: 0 0 15px rgba(0, 0, 0, 0.08);
-  border-radius: 12px;
-  overflow: hidden;
 }
 
 // 左侧历史记录面板
@@ -541,7 +590,11 @@ onBeforeUnmount(() => {
       align-items: flex-start;
       margin-bottom: 25px;
       position: relative;
+    }
 
+    // 历史记录跳转高亮
+    &.highlight {
+      animation: highlight 0.2s ease-in-out;
     }
   }
 
@@ -632,7 +685,7 @@ onBeforeUnmount(() => {
       opacity: 0.3;
       transition: opacity 0.2s ease;
 
-      // 鼠标悬停时显示z操作按钮
+      // 鼠标悬停时显示操作按钮
       &:hover {
         opacity: 1;
       }

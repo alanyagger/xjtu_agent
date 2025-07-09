@@ -1,212 +1,229 @@
 <template>
-  <div class="auth-container">
-    <!-- 背景装饰 -->
-    <div class="auth-decoration"></div>
-    
-    <!-- 主内容区 -->
-    <div class="auth-content">
-      <!-- 品牌标识 -->
-      <div class="auth-brand">
-        <h1 class="brand-title">交小荣AI助手</h1>
-        <p class="brand-slogan">智能教务，一键触达</p>
+  <section class="page-layout">
+    <!-- 头部（引入公共头部组件） -->
+    <header class="page-layout-header">
+      <div class="page-layout-row">
+        <HeaderView />
       </div>
-      
-      <!-- 表单卡片 -->
-      <div class="auth-card">
-        <!-- 选项卡切换 -->
-        <div class="auth-tabs">
-          <button 
-            class="auth-tab" 
-            :class="{ 'active': activeTab === 'login' }"
-            @click="activeTab = 'login'"
-          >
-            登录
-          </button>
-          <button 
-            class="auth-tab" 
-            :class="{ 'active': activeTab === 'register' }"
-            @click="activeTab = 'register'"
-          >
-            注册
-          </button>
-        </div>
-        
-        <!-- 表单内容 -->
-        <div class="auth-form-container">
-          <!-- 登录表单 -->
-          <div 
-            class="auth-form" 
-            v-show="activeTab === 'login'"
-            :class="{ 'slide-in': activeTab === 'login' }"
-          >
-            <el-form 
-              ref="loginFormRef" 
-              :model="loginForm" 
-              :rules="loginRules" 
-              label-position="top"
-              class="form"
-            >
-              <el-form-item label="学号" prop="username">
-                <el-input 
-                  v-model="loginForm.username" 
-                  placeholder="请输入学号"
-                >
-                  <template #prefix>
-                    <font-awesome-icon :icon="faUser" class="input-icon" />
-                  </template>
-                </el-input>
-              </el-form-item>
-              
-              <el-form-item label="密码" prop="password">
-                <el-input 
-                  v-model="loginForm.password" 
-                  type="password" 
-                  placeholder="请输入密码"
-                >
-                  <template #prefix>
-                    <font-awesome-icon :icon="faLock" class="input-icon" />
-                  </template>
-                </el-input>
-              </el-form-item>
-              
-              <el-form-item class="form-actions">
-                <el-checkbox v-model="loginForm.remember">记住我</el-checkbox>
-                <a href="#" class="forgot-password">忘记密码?</a>
-              </el-form-item>
-              
-              <el-form-item>
-                <el-button 
-                  type="primary" 
-                  :loading="loginLoading" 
-                  @click="handleLogin"
-                  class="submit-btn"
-                >
-                  登录
-                </el-button>
-              </el-form-item>
-            </el-form>
+    </header>
+    
+    <!-- 主体内容（登录注册表单） -->
+    <main class="page-layout-content">
+      <section class="starter-content">
+        <div class="page-layout-row">
+          <div class="auth-container">
+            <!-- 背景装饰 -->
+            <div class="auth-decoration"></div>
             
-            <div class="social-login">
-              <p class="divider"><span>其他登录方式</span></p>
-              <div class="social-buttons">
-                <el-button 
-                  type="text" 
-                  class="social-btn" 
-                  @click="handleSocialLogin('weibo')"
-                  aria-label="微博登录"
-                >
-                  <font-awesome-icon :icon="faWeibo" />
-                </el-button>
-                <el-button 
-                  type="text" 
-                  class="social-btn" 
-                  @click="handleSocialLogin('wechat')"
-                  aria-label="微信登录"
-                >
-                  <font-awesome-icon :icon="faWeixin" />
-                </el-button>
-                <el-button 
-                  type="text" 
-                  class="social-btn" 
-                  @click="handleSocialLogin('qq')"
-                  aria-label="QQ登录"
-                >
-                  <font-awesome-icon :icon="faQq" />
-                </el-button>
-                <el-button 
-                  type="text" 
-                  class="social-btn" 
-                  @click="handleSocialLogin('github')"
-                  aria-label="Github登录"
-                >
-                  <font-awesome-icon :icon="faGithub" />
-                </el-button>
+            <!-- 主内容区 -->
+            <div class="auth-content">
+              <!-- 品牌标识 -->
+              <div class="auth-brand">
+                <h1 class="brand-title">交小荣AI助手</h1>
+                <p class="brand-slogan">智能教务，一键触达</p>
+              </div>
+              
+              <!-- 表单卡片 -->
+              <div class="auth-card">
+                <!-- 选项卡切换 -->
+                <div class="auth-tabs">
+                  <button 
+                    class="auth-tab" 
+                    :class="{ 'active': activeTab === 'login' }"
+                    @click="activeTab = 'login'"
+                  >
+                    登录
+                  </button>
+                  <button 
+                    class="auth-tab" 
+                    :class="{ 'active': activeTab === 'register' }"
+                    @click="activeTab = 'register'"
+                  >
+                    注册
+                  </button>
+                </div>
+                
+                <!-- 表单内容 -->
+                <div class="auth-form-container">
+                  <!-- 登录表单 -->
+                  <div 
+                    class="auth-form" 
+                    v-show="activeTab === 'login'"
+                    :class="{ 'slide-in': activeTab === 'login' }"
+                  >
+                    <el-form 
+                      ref="loginFormRef" 
+                      :model="loginForm" 
+                      :rules="loginRules" 
+                      label-position="top"
+                      class="form"
+                    >
+                      <el-form-item label="学号" prop="username">
+                        <el-input 
+                          v-model="loginForm.username" 
+                          placeholder="请输入学号"
+                        >
+                          <template #prefix>
+                            <font-awesome-icon :icon="faUser" class="input-icon" />
+                          </template>
+                        </el-input>
+                      </el-form-item>
+                      
+                      <el-form-item label="密码" prop="password">
+                        <el-input 
+                          v-model="loginForm.password" 
+                          type="password" 
+                          placeholder="请输入密码"
+                        >
+                          <template #prefix>
+                            <font-awesome-icon :icon="faLock" class="input-icon" />
+                          </template>
+                        </el-input>
+                      </el-form-item>
+                      
+                      <el-form-item class="form-actions">
+                        <el-checkbox v-model="loginForm.remember">记住我</el-checkbox>
+                        <a href="#" class="forgot-password">忘记密码?</a>
+                      </el-form-item>
+                      
+                      <el-form-item>
+                        <el-button 
+                          type="primary" 
+                          :loading="loginLoading" 
+                          @click="handleLogin"
+                          class="submit-btn"
+                        >
+                          登录
+                        </el-button>
+                      </el-form-item>
+                    </el-form>
+                    
+                    <div class="social-login">
+                      <p class="divider"><span>其他登录方式</span></p>
+                      <div class="social-buttons">
+                        <el-button 
+                          type="text" 
+                          class="social-btn" 
+                          @click="handleSocialLogin('weibo')"
+                          aria-label="微博登录"
+                        >
+                          <font-awesome-icon :icon="faWeibo" />
+                        </el-button>
+                        <el-button 
+                          type="text" 
+                          class="social-btn" 
+                          @click="handleSocialLogin('wechat')"
+                          aria-label="微信登录"
+                        >
+                          <font-awesome-icon :icon="faWeixin" />
+                        </el-button>
+                        <el-button 
+                          type="text" 
+                          class="social-btn" 
+                          @click="handleSocialLogin('qq')"
+                          aria-label="QQ登录"
+                        >
+                          <font-awesome-icon :icon="faQq" />
+                        </el-button>
+                        <el-button 
+                          type="text" 
+                          class="social-btn" 
+                          @click="handleSocialLogin('github')"
+                          aria-label="Github登录"
+                        >
+                          <font-awesome-icon :icon="faGithub" />
+                        </el-button>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <!-- 注册表单 -->
+                  <div 
+                    class="auth-form" 
+                    v-show="activeTab === 'register'"
+                    :class="{ 'slide-in': activeTab === 'register' }"
+                  >
+                    <el-form 
+                      ref="registerFormRef" 
+                      :model="registerForm" 
+                      :rules="registerRules" 
+                      label-position="top"
+                      class="form"
+                    >
+                      <el-form-item label="学号" prop="username">
+                        <el-input 
+                          v-model="registerForm.username" 
+                          placeholder="请输入学号"
+                        >
+                          <template #prefix>
+                            <font-awesome-icon :icon="faUser" class="input-icon" />
+                          </template>
+                        </el-input>
+                      </el-form-item>
+                      
+                      <el-form-item label="邮箱" prop="email">
+                        <el-input 
+                          v-model="registerForm.email" 
+                          placeholder="请输入邮箱"
+                        >
+                          <template #prefix>
+                            <font-awesome-icon :icon="faMail" class="input-icon" />
+                          </template>
+                        </el-input>
+                      </el-form-item>
+                      
+                      <el-form-item label="密码" prop="password">
+                        <el-input 
+                          v-model="registerForm.password" 
+                          type="password" 
+                          placeholder="请输入密码"
+                        >
+                          <template #prefix>
+                            <font-awesome-icon :icon="faLock" class="input-icon" />
+                          </template>
+                        </el-input>
+                      </el-form-item>
+                      
+                      <el-form-item label="确认密码" prop="confirmPassword">
+                        <el-input 
+                          v-model="registerForm.confirmPassword" 
+                          type="password" 
+                          placeholder="请再次输入密码"
+                        >
+                          <template #prefix>
+                            <font-awesome-icon :icon="faLock" class="input-icon" />
+                          </template>
+                        </el-input>
+                      </el-form-item>
+                      
+                      <el-form-item class="form-actions">
+                        <el-checkbox v-model="registerForm.agree">我已阅读并同意<a href="#" class="terms-link">用户协议</a>和<a href="#" class="terms-link">隐私政策</a></el-checkbox>
+                      </el-form-item>
+                      
+                      <el-form-item>
+                        <el-button 
+                          type="primary" 
+                          :loading="registerLoading" 
+                          @click="handleRegister"
+                          class="submit-btn"
+                        >
+                          注册
+                        </el-button>
+                      </el-form-item>
+                    </el-form>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
-          
-          <!-- 注册表单 -->
-          <div 
-            class="auth-form" 
-            v-show="activeTab === 'register'"
-            :class="{ 'slide-in': activeTab === 'register' }"
-          >
-            <el-form 
-              ref="registerFormRef" 
-              :model="registerForm" 
-              :rules="registerRules" 
-              label-position="top"
-              class="form"
-            >
-              <el-form-item label="学号" prop="username">
-                <el-input 
-                  v-model="registerForm.username" 
-                  placeholder="请输入学号"
-                >
-                  <template #prefix>
-                    <font-awesome-icon :icon="faUser" class="input-icon" />
-                  </template>
-                </el-input>
-              </el-form-item>
-              
-              <el-form-item label="邮箱" prop="email">
-                <el-input 
-                  v-model="registerForm.email" 
-                  placeholder="请输入邮箱"
-                >
-                  <template #prefix>
-                    <font-awesome-icon :icon="faMail" class="input-icon" />
-                  </template>
-                </el-input>
-              </el-form-item>
-              
-              <el-form-item label="密码" prop="password">
-                <el-input 
-                  v-model="registerForm.password" 
-                  type="password" 
-                  placeholder="请输入密码"
-                >
-                  <template #prefix>
-                    <font-awesome-icon :icon="faLock" class="input-icon" />
-                  </template>
-                </el-input>
-              </el-form-item>
-              
-              <el-form-item label="确认密码" prop="confirmPassword">
-                <el-input 
-                  v-model="registerForm.confirmPassword" 
-                  type="password" 
-                  placeholder="请再次输入密码"
-                >
-                  <template #prefix>
-                    <font-awesome-icon :icon="faLock" class="input-icon" />
-                  </template>
-                </el-input>
-              </el-form-item>
-              
-              <el-form-item class="form-actions">
-                <el-checkbox v-model="registerForm.agree">我已阅读并同意<a href="#" class="terms-link">用户协议</a>和<a href="#" class="terms-link">隐私政策</a></el-checkbox>
-              </el-form-item>
-              
-              <el-form-item>
-                <el-button 
-                  type="primary" 
-                  :loading="registerLoading" 
-                  @click="handleRegister"
-                  class="submit-btn"
-                >
-                  注册
-                </el-button>
-              </el-form-item>
-            </el-form>
-          </div>
         </div>
-      </div>
-    </div>
-  </div>
+      </section>
+    </main>
+  </section>
 </template>
 
-<script lang="ts" setup>
+<script setup lang="ts">
+import HeaderView from "@/components/HeaderView.vue";
 import { ref, reactive } from 'vue';
 import { ElMessage } from 'element-plus';
 import { useRouter } from 'vue-router';
@@ -308,10 +325,9 @@ const handleLogin = () => {
         });
         // 存Token到localStorage
         localStorage.setItem('token', res.access_token);
-        localStorage.setItem('userId', loginForm.username);
         localStorage.setItem('username', loginForm.username);
         ElMessage.success('登录成功');
-        router.push('/aiChat'); // 跳转到聊天页
+        router.push('/LaiChat'); // 跳转到聊天页
       } catch (error) {
         console.error('登录失败', error);
       } finally {
@@ -351,8 +367,44 @@ const handleSocialLogin = (type: string) => {
 </script>
 
 <style lang="scss" scoped>
+// 继承公共布局样式
+.page-layout {
+  display: flex;
+  flex-direction: column;
+  background: #eee;
+
+  .page-layout-header {
+    display: flex;
+    justify-content: center;
+    min-width: 760px;
+    height: 66px;
+    background: #fff;
+    border-bottom: 1px solid #eee;
+    box-shadow: 0 2px 8px 0 rgba(2, 24, 42, 0.1);
+  }
+
+  .page-layout-row {
+    width: 1440px;
+    display: flex;
+    background: #fff;
+    flex-direction: column;
+  }
+
+  .page-layout-content {
+    flex: 1;
+  }
+
+  .starter-content {
+    height: calc(100vh - 66px);
+    display: flex;
+    justify-content: center;
+  }
+}
+
+// 登录注册页面样式
 .auth-container {
-  min-height: 100vh;
+  width: 100%;
+  min-height: 100%;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -375,7 +427,7 @@ const handleSocialLogin = (type: string) => {
     animation: float 8s ease-in-out infinite; // 背景浮动动画
   }
   
-  // 主内容
+  // 主内容区
   .auth-content {
     width: 100%;
     max-width: 1200px;
@@ -597,6 +649,16 @@ const handleSocialLogin = (type: string) => {
 
 // 响应式设计
 @media (max-width: 768px) {
+  .page-layout {
+    .page-layout-header {
+      min-width: 100%;
+    }
+    
+    .page-layout-row {
+      width: 100%;
+    }
+  }
+
   .auth-container {
     .auth-content {
       padding: 20px;
