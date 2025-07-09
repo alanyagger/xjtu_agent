@@ -3,6 +3,11 @@
 2. [How to run](#how-to-run)
 ### **XJTU 交小荣智能学生教务平台**
 ## Environment setup
+
+Please **download** driver first: 
+[Chrome Driver](https://developer.chrome.com/docs/chromedriver)
+We provide Chrome Driver for Chrome 138.0.
+
 Install dependencies:
 ```shell
 node.js v22.17.0
