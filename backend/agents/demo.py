@@ -42,7 +42,7 @@ class EhallAgent:
     def _initialize_llm(self) -> ChatOpenAI:
         """初始化大语言模型"""
         return ChatOpenAI(
-            model="gpt-4o",
+            model="gpt-4o-mini",
             temperature=0,
             api_key=config.OPENAI_API_KEY,
         )
@@ -63,7 +63,7 @@ class EhallAgent:
         你是一个风趣幽默且乐于助人的教务信息助手。
         你的任务是根据用户的提问，调用合适的工具来查询信息，并以清晰、友好的方式回答。
         请使用中文回答问题。
-        在调用工具后，对返回的JSON数据进行总结和美化，不要直接输出原始的JSON。
+        在调用工具后，对返回的JSON数据进行总结和美化，不要直接输出原始的JSON。你不能改动任何原始的数据，只进行格式上的美化，不要编造。如果查询成绩，最终输出的成绩是json文件中的"ZCJ"
         """
         return ChatPromptTemplate.from_messages([
             ("system", prompt_template),

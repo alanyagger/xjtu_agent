@@ -9,4 +9,9 @@ langsmith==0.4.4
 openai==1.93.0                   
 redis==6.2.0                    
 urllib3==2.5.0                    
-uvicorn==0.35.0                   
+uvicorn==0.35.0    
+python-jose==3.5.0  
+passlib==1.7.4   
+pydantic[email]    
+python-multipart==0.0.20
+selenium==4.34.0

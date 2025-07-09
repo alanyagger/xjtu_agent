@@ -12,7 +12,14 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 
 LOGIN_URL = "https://ehall.xjtu.edu.cn/login"
-CHROME_DRIVER_PATH = "D:\\chromedriver-win64\\chromedriver.exe" #官网下载chrome驱动，替换为自己的驱动路径
+#CHROME_DRIVER_PATH = "D://study//internship_2025//xjtu_agent\\backend\\tools\\chromedriver-win64\\chromedriver.exe" #官网下载chrome驱动，替换为自己的驱动路径
+import os
+
+# 获取当前脚本所在目录
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+
+# 修改为相对路径
+CHROME_DRIVER_PATH = os.path.join(BASE_DIR, "chromedriver-win64", "chromedriver.exe")
 
 campus_map = {
     "兴庆校区": "1",

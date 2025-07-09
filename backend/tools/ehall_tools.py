@@ -32,7 +32,8 @@ def call_get_data(func_name, extra_args=None):
             text=True, 
             check=True,
             timeout=300,  # 设置超时时间，避免脚本卡死
-            env=env
+            env=env,
+            encoding='utf-8',  # 明确指定编码
         )
         
         output_file = f"{func_name}_data.json"
