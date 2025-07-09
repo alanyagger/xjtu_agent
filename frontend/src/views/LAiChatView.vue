@@ -244,7 +244,7 @@ const callChatApi = async (historyId: string, userMessage: string) => {
 
     // 准备请求数据
     const requestData = {
-      user_id: localStorage.getItem("userId") || "anonymous", // 从登录信息中获取用户ID
+      user_id: localStorage.getItem("username") || "anonymous", // 从登录信息中获取用户ID
       message: userMessage,
       session_id: currentSessionId.value || "" // 传递当前会话ID保持上下文
     };
