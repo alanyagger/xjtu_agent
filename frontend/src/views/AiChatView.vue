@@ -1,5 +1,12 @@
 <template>
   <div class="ai-chat-view">
+    <!-- 头部区域 -->
+    <header class="page-layout-header">
+      <div class="page-layout-row">
+        <HeaderView />
+      </div>
+    </header>
+    
     <div class="chat-container">
       <!-- 左侧历史记录栏 -->
       <div class="history-panel">
@@ -38,10 +45,9 @@
             </div>
             <div class="ai-chat-content-box init-box">
               <div class="ai-chat-title">交小荣</div>
-              <div class="ai-chat-text"v-if="!isLoggedIn">当前为未登录状态，可进行简单对话</div>
-              <div class="ai-chat-text"v-if="!isLoggedIn">如需获取教务相关信息，请先登录</div>
-              <div class="ai-chat-text"v-if="isLoggedIn">已登录成功，可就教务信息进行询问</div>
-              <div class="ai-chat-text"v-if="isLoggedIn">所有数据均从ehall大厅获取</div>             
+              <div class="ai-chat-text">当前为未登录状态，可进行简单对话</div>
+              <div class="ai-chat-text">如需获取教务相关信息，请先登录</div>
+         
             </div>
           </li>
           <li
@@ -52,7 +58,7 @@
             :data-index="index"
             :data-history-id="item.historyId"
           >
-            <!-- 对话内容（与之前保持一致） -->
+            <!-- 对话内容 -->
             <div class="ai-chat-avatar">
               <el-avatar
                 v-if="item.role === 'user'"
@@ -106,7 +112,7 @@
             </div>
           </li>
         </ul>
-        <!-- 文本发送区域（与之前保持一致） -->
+        <!-- 文本发送区域 -->
         <div class="ai-chat-form-wrapper">
           <div class="ai-chat-form-box">
             <textarea
@@ -142,7 +148,9 @@
   </div>
 </template>
 
-<script lang="ts" setup>
+<script setup lang="ts">
+// 导入HeaderView组件
+import HeaderView from "@/components/HeaderView.vue";
 import { UserFilled, Delete, Loading, DocumentCopy } from "@element-plus/icons-vue";
 import { onBeforeUnmount, onMounted, ref, watch } from "vue";
 import { ElMessage } from "element-plus";
@@ -411,17 +419,46 @@ onBeforeUnmount(() => {
     localStorage.setItem("chatSessionId", currentSessionId.value);
   }
 });
-
 </script>
 
 <style lang="scss" scoped>
-// 基础样式保持不变，新增历史记录跳转高亮样式
-.ai-chat-list {
-  .ai-chat-item {
-    // 新增：历史记录跳转高亮动画
-    &.highlight {
-      animation: highlight 2s ease-in-out;
-    }
+// 头部样式（从App.vue迁移）
+.page-layout-header {
+  display: flex;
+  justify-content: center;
+  min-width: 760px;
+  height: 66px;
+  background: #fff;
+  border-bottom: 1px solid #eee;
+  box-shadow: 0 2px 8px 0 rgba(2, 24, 42, 0.1);
+}
+
+.page-layout-row {
+  width: 1440px;
+  display: flex;
+  background: #fff;
+  flex-direction: column;
+}
+
+// 调整聊天容器样式（减去头部高度）
+.ai-chat-view {
+  display: flex;
+  flex-direction: column; 
+  justify-content: center;
+  background-color: #f0f7ff;
+  min-height: 100vh;
+  box-sizing: border-box;
+
+  .chat-container {
+    display: flex;
+    width: 100%;
+    max-width: 1400px;
+    /* 高度调整为减去头部高度 */
+    height: calc(100vh - 66px);
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.08);
+    border-radius: 12px;
+    overflow: hidden;
+    margin: 0 auto; /* 居中显示 */
   }
 }
 
@@ -442,26 +479,6 @@ onBeforeUnmount(() => {
   50% {
     box-shadow: 0 0 0 5px rgba(64, 150, 255, 0.2); // 闪烁边框效果
   }
-}
-
-
-.ai-chat-view {
-  display: flex;
-  justify-content: center;
-  background-color: #f0f7ff;
-  min-height: 100vh;
-  padding: 20px 0;
-  box-sizing: border-box;
-}
-
-.chat-container {
-  display: flex;
-  width: 100%;
-  max-width: 1400px;
-  height: calc(100vh - 40px);
-  box-shadow: 0 0 15px rgba(0, 0, 0, 0.08);
-  border-radius: 12px;
-  overflow: hidden;
 }
 
 // 左侧历史记录面板
@@ -567,7 +584,11 @@ onBeforeUnmount(() => {
       align-items: flex-start;
       margin-bottom: 25px;
       position: relative;
+    }
 
+    // 历史记录跳转高亮
+    &.highlight {
+      animation: highlight 0.2s ease-in-out;
     }
   }
 
@@ -658,7 +679,7 @@ onBeforeUnmount(() => {
       opacity: 0.3;
       transition: opacity 0.2s ease;
 
-      // 鼠标悬停时显示z操作按钮
+      // 鼠标悬停时显示操作按钮
       &:hover {
         opacity: 1;
       }

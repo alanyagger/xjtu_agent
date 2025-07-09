@@ -1,17 +1,10 @@
 <script setup lang="ts">
-import HeaderView from "@/components/HeaderView.vue";
+// 移除HeaderView的导入
 </script>
 
 <template>
   <section class="page-layout">
-    <!-- 头部 -->
-    <header class="page-layout-header">
-      <div class="page-layout-row">
-        <!-- 引入公共的头部组件 -->
-        <HeaderView />
-      </div>
-    </header>
-    <!-- 主体 -->
+    <!-- 只保留主体内容区域 -->
     <main class="page-layout-content">
       <section class="starter-content">
         <div class="page-layout-row">
@@ -28,14 +21,14 @@ import HeaderView from "@/components/HeaderView.vue";
   flex-direction: column;
   background: #eee;
 
-  .page-layout-header {
+  .page-layout-content {
+    flex: 1;
+  }
+
+  .starter-content {
+    height: 100vh; /* 因移除头部，高度改为100vh */
     display: flex;
     justify-content: center;
-    min-width: 760px;
-    height: 66px;
-    background: #fff;
-    border-bottom: 1px solid #eee;
-    box-shadow: 0 2px 8px 0 rgba(2, 24, 42, 0.1);
   }
 
   .page-layout-row {
@@ -43,16 +36,6 @@ import HeaderView from "@/components/HeaderView.vue";
     display: flex;
     background: #fff;
     flex-direction: column;
-  }
-
-  .page-layout-content {
-    flex: 1;
-  }
-
-  .starter-content {
-    height: calc(100vh - 66px);
-    display: flex;
-    justify-content: center;
   }
 }
 </style>

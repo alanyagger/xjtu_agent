@@ -1,12 +1,15 @@
 <script lang="ts" setup>
 import { useRouter, useRoute } from "vue-router";
-import { ChatDotRound, User, ArrowDown } from "@element-plus/icons-vue";
+import { ChatDotRound,  ArrowDown } from "@element-plus/icons-vue";
 import { ref } from "vue";
-import { ElMessage } from "element-plus";
+//import { ElMessage } from "element-plus";
 
 const router = useRouter();
 const route = useRoute();
-const isLoggedIn = ref(false); // 示例登录状态
+
+// 添加用户名状态
+const username = ref(localStorage.getItem('username') || '');
+
 
 // 判断当前路由是否激活
 const isActive = (path: string) => {
@@ -23,20 +26,34 @@ const navClickHandle = () => {
   router.push("/aiChat");
 };
 
-// 登录/登出处理
-const handleLogin = (command?: string) => {
-  if (!isLoggedIn.value) {
+// 登出处理
+const handleLogin = () => {
     // 处理登录逻辑
-    router.push("/login"); // 假设登录路由为/login
-  }
+    router.push("/login");
 };
+// 页面加载时检查登录状态
+// onMounted(() => {
+//   // 如果localStorage中有token但没有用户名，尝试获取用户信息
+//   if (localStorage.getItem('token') && !localStorage.getItem('username')) {
+//     userApi.getCurrentUser()
+//       .then(userRes => {
+//         username.value = userRes.username;
+//         localStorage.setItem('username', userRes.username);
+//       })
+//       .catch(error => {
+//         console.error('获取用户信息失败', error);
+//         // 清除无效token
+//         localStorage.removeItem('token');
+//       });
+//   }
+// });
 </script>
 
 <template>
   <header class="page-header">
     <div class="container">
       <div class="header-content">
-        <!-- Logo区域 - 替换为交小荣logo.svg -->
+        <!-- Logo区域 -->
         <div class="logo-container" @click="logoImgClickHandle">
           <el-image
             src="/logo.png"  
@@ -44,14 +61,12 @@ const handleLogin = (command?: string) => {
             fit="contain"
             alt="交小荣Logo"
           />
-          <!-- 移除原有文字，仅保留logo图片 -->
         </div>
         
         <!-- 导航区域 -->
         <nav class="nav-container">
           <span 
             class="nav-item" 
-            @click="navClickHandle"
             :class="{ 'active': isActive('/aiChat') }"
           >
             <el-icon class="nav-icon">
@@ -61,19 +76,22 @@ const handleLogin = (command?: string) => {
           </span>
         </nav>
         
-        <!-- 登录按钮 -->
-        <div class="login-container">
-          <el-button
-            v-if="!isLoggedIn"
-            type="primary"
-            @click="handleLogin"
-            class="login-btn"
-          >
-            <el-icon><User /></el-icon>
-            <span>登录</span>
-          </el-button>
-          
-
+        <!-- 登出按钮 -->
+        <div class="login-container">          
+          <el-dropdown  @command="handleLogin">
+            <el-button type="text" class="user-btn">
+              <el-avatar size="small" icon="User" />
+              <span class="user-name">{{ username }}，您好</span>
+              <el-icon class="el-icon--right">
+                <ArrowDown />
+              </el-icon>
+            </el-button>
+            <template #dropdown>
+              <el-dropdown-menu>
+                <el-dropdown-item command="logout">退出登录</el-dropdown-item>
+              </el-dropdown-menu>
+            </template>
+          </el-dropdown>
         </div>
       </div>
     </div>
@@ -84,7 +102,7 @@ const handleLogin = (command?: string) => {
 .page-header {
   background-color: #ffffff;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-  padding: 12px 0; /* 稍微调整内边距以适应logo尺寸 */
+  padding: 12px 0;
   position: sticky;
   top: 0;
   z-index: 100;
@@ -101,7 +119,6 @@ const handleLogin = (command?: string) => {
     align-items: center;
   }
   
-  // Logo区域 - 调整样式以适应svg logo
   .logo-container {
     display: flex;
     align-items: center;
@@ -113,13 +130,11 @@ const handleLogin = (command?: string) => {
     }
     
     .logo-image {
-      height: 44px; /* 适当调整logo高度 */
+      height: 44px;
       width: auto;
-      // 移除右侧margin，因为不再有文字
     }
   }
   
-  // 导航区域
   .nav-container {
     .nav-item {
       display: flex;
@@ -146,7 +161,6 @@ const handleLogin = (command?: string) => {
     }
   }
   
-  // 登录区域
   .login-container {
     .login-btn {
       display: flex;
@@ -172,12 +186,13 @@ const handleLogin = (command?: string) => {
       
       .user-name {
         margin: 0 5px;
+        font-weight: 500;
+        color: #165dff;
       }
     }
   }
 }
 
-// 响应式设计
 @media (min-width: 768px) {
   .page-header {
     .nav-container .nav-item {
