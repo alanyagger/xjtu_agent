@@ -42,7 +42,7 @@ class EhallAgent:
     def _initialize_llm(self) -> ChatOpenAI:
         """初始化大语言模型"""
         return ChatOpenAI(
-            model="gpt-4o",
+            model="gpt-4o-mini",
             temperature=0,
             api_key=config.OPENAI_API_KEY,
         )
