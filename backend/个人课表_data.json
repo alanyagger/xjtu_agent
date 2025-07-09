@@ -1,0 +1,16 @@
+{
+  "datas": {
+    "xskcb": {
+      "totalSize": 0,
+      "pageSize": 15,
+      "rows": [],
+      "extParams": {
+        "logId": "791f14c22c7549a0b925a6c139dfa293",
+        "code": 3,
+        "totalPage": 0,
+        "msg": "查询学年学期的课程未发布"
+      }
+    }
+  },
+  "code": "0"
+}

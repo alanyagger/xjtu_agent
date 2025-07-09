@@ -24,12 +24,13 @@ import redis
 from config import config
 from passlib.context import CryptContext
 from agents.demo import EhallAgent  
+from crypto_utils import crypto 
+from models import DBUser,Base
 
 # ---------- 新增数据库配置（用户表） ----------
 SQLALCHEMY_DATABASE_URL = "sqlite:///./users.db"  # 数据库文件存在backend目录
 engine = create_engine(SQLALCHEMY_DATABASE_URL, connect_args={"check_same_thread": False})
 UserSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
-Base = declarative_base()
 
 # ---------- 新增JWT和密码加密配置 ----------
 SECRET_KEY = config.get_secret_key() or "your-secret-key"  # 去config.py里加SECRET_KEY
@@ -38,14 +39,6 @@ ACCESS_TOKEN_EXPIRE_MINUTES = 30
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
-
-# ---------- 数据库模型（用户表） ----------
-class DBUser(Base):
-    __tablename__ = "users"
-    username = Column(String, primary_key=True, index=True)  # 学号
-    email = Column(String, unique=True, index=True)
-    hashed_password = Column(String)
-    is_active = Column(Boolean, default=True)
 
 Base.metadata.create_all(bind=engine)  # 创建表（首次运行自动建表）
 
@@ -73,11 +66,11 @@ def get_user_db():
     finally:
         db.close()
 
-def verify_password(plain_password, hashed_password):
-    return pwd_context.verify(plain_password, hashed_password)
+# def verify_password(plain_password, hashed_password):
+#     return pwd_context.verify(plain_password, hashed_password)
 
-def get_password_hash(password):
-    return pwd_context.hash(password)
+# def get_password_hash(password):
+#     return pwd_context.hash(password)
 
 def get_db_user(db: Session, username: str):
     return db.query(DBUser).filter(DBUser.username == username).first()
@@ -86,7 +79,7 @@ def create_db_user(db: Session, user: UserCreate):
     db_user = DBUser(
         username=user.username,
         email=user.email,
-        hashed_password=get_password_hash(user.password)
+        encrypted_password=crypto.encrypt(user.password)
     )
     db.add(db_user)
     db.commit()
@@ -95,7 +88,8 @@ def create_db_user(db: Session, user: UserCreate):
 
 def authenticate_user(db: Session, username: str, password: str):
     user = get_db_user(db, username)
-    if not user or not verify_password(password, user.hashed_password):
+    decrypted_password = crypto.decrypt(user.encrypted_password)
+    if password != decrypted_password:
         return False
     return user
 

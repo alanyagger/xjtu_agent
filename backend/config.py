@@ -8,7 +8,10 @@ import os
 import logging
 from typing import Optional
 from dotenv import load_dotenv
-
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
+from crypto_utils import crypto  # 导入加密工具
+from models import DBUser  # 导入数据库模型
 # 加载环境变量
 load_dotenv()
 
@@ -26,7 +29,40 @@ class Config:
     REDIS_PASSWORD: Optional[str] = os.getenv('REDIS_PASSWORD')
     REDIS_DB: int = int(os.getenv('REDIS_DB', 0))
     
-    SECRET_KEY = "your-very-secure-secret-key"
+
+    SECRET_KEY = os.getenv(
+    "SECRET_KEY", 
+    "default-jwt-secret-key-for-development-only-change-in-production"
+        )  # JWT密钥，生产环境请修改为更复杂的字符串
+    
+    AES_SECRET_KEY = os.getenv(
+        "AES_SECRET_KEY", 
+        b'\x1f\x9b\x0c\x8a\x7d\x6e\x5f\x4a\x3b\x2c\x1d\x0e\xfa\xeb\xdc\xba'
+        b'\x01\x23\x45\x67\x89\xab\xcd\xef\xfe\xdc\xba\x98\x76\x54\x32\x10'  # 共32字节
+        )
+
+    # 数据库配置
+    SQLALCHEMY_DATABASE_URL = "sqlite:///./users.db"
+    engine = create_engine(SQLALCHEMY_DATABASE_URL, connect_args={"check_same_thread": False})
+    SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+    
+    def get_ehall_credentials(self):
+        """从数据库获取教务处账号密码并解密"""
+        db = self.SessionLocal()
+        try:
+            user = db.query(DBUser).first()
+            if not user:
+                raise ValueError("数据库中没有找到用户")
+                
+            # 解密密码
+            decrypted_password = crypto.decrypt(user.encrypted_password)
+            return {
+                "username": user.username,
+                "password": decrypted_password
+            }
+        finally:
+            db.close()
+
 
     @classmethod
     def get_secret_key(cls) -> str:

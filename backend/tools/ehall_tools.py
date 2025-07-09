@@ -3,13 +3,11 @@ import os
 import json
 import subprocess
 from langchain.tools import tool
-from dotenv import load_dotenv
+from config import config
 
-# 明确加载上一级目录下的 .env 文件
-load_dotenv(os.path.join(os.path.dirname(__file__), "..", ".env"))
-
-USERNAME = os.getenv("EHALL_USERNAME")
-PASSWORD = os.getenv("EHALL_PASSWORD")
+credentials = config.get_ehall_credentials()
+USERNAME = credentials["username"]
+PASSWORD = credentials["password"]
 
 if not USERNAME or not PASSWORD:
     raise ValueError("请在 .env 文件中设置 EHALL_USERNAME 和 EHALL_PASSWORD")
