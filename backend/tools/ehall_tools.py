@@ -4,16 +4,11 @@ import json
 import subprocess
 from langchain.tools import tool
 from config import config
-
-credentials = config.get_ehall_credentials()
-USERNAME = credentials["username"]
-PASSWORD = credentials["password"]
-
-if not USERNAME or not PASSWORD:
-    raise ValueError("请在 .env 文件中设置 EHALL_USERNAME 和 EHALL_PASSWORD")
-
 # --- 工具函数：调用 get_data.py 并获取输出文件 ---
 def call_get_data(func_name, extra_args=None):
+    credentials = config.get_ehall_credentials()
+    USERNAME = credentials["username"]
+    PASSWORD = credentials["password"]
     script_path = os.path.join(os.path.dirname(__file__), "get_data.py")
     args = ["python", script_path, "--username", USERNAME, "--password", PASSWORD, "--func", func_name]
     if extra_args:

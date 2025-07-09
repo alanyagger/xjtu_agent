@@ -5,12 +5,12 @@ FastAPI 交小荣智能教务后端
 
 from models import DBUser, Base
 from sqlalchemy import create_engine, Column, String, Boolean
-from sqlalchemy.orm import declarative_base
 from sqlalchemy.orm import sessionmaker, Session
 from config import config
 from crypto_utils import crypto 
 import os
 
+current_user_context = {}
 # 数据库配置
 SQLALCHEMY_DATABASE_URL = "sqlite:///./users.db"
 engine = create_engine(SQLALCHEMY_DATABASE_URL, connect_args={"check_same_thread": False})
@@ -67,7 +67,7 @@ from pydantic import BaseModel, EmailStr, field_validator
 import redis
 from passlib.context import CryptContext
 from agents.demo_rag import EhallAgent  
-
+from thread_local import set_current_username, get_current_username
 
 
 # ---------- 新增数据库配置（用户表） ----------
@@ -419,6 +419,8 @@ async def chat_endpoint(request: ChatRequest):
     session_id = request.session_id or generate_session_id()
     user_message = request.message.strip()
     
+    set_current_username(user_id)
+
     # 可选：添加 user_id 格式校验（如是否为数字）
     if not user_id.isdigit():
         raise HTTPException(status_code=400, detail="用户ID必须为数字")
@@ -441,7 +443,7 @@ async def chat_endpoint(request: ChatRequest):
     # 保存AI响应
     ai_msg = ChatMessage(role="assistant", content=ai_response, timestamp=time.time())
     await save_message_to_redis(user_id, session_id, ai_msg)
-    
+    set_current_username(None)
     return ChatResponse(
         session_id=session_id,
         message=ai_response,

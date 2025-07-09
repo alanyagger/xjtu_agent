@@ -12,6 +12,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from crypto_utils import crypto  # 导入加密工具
 from models import DBUser  # 导入数据库模型
+from thread_local import get_current_username
 # 加载环境变量
 load_dotenv()
 
@@ -48,9 +49,15 @@ class Config:
     
     def get_ehall_credentials(self):
         """从数据库获取教务处账号密码并解密"""
+
+        # 获取当前线程ID，读取对应的学号
+        username = get_current_username()
+        
+        if not username:
+            raise ValueError("未获取到当前用户的学号")
         db = self.SessionLocal()
         try:
-            user = db.query(DBUser).first()
+            user = db.query(DBUser).filter(DBUser.username == username).first()
             if not user:
                 raise ValueError("数据库中没有找到用户")
                 
