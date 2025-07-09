@@ -23,7 +23,7 @@ from pydantic import BaseModel, EmailStr, field_validator
 import redis
 from config import config
 from passlib.context import CryptContext
-from agents.demo import EhallAgent  
+from agents.demo_rag import EhallAgent  
 from crypto_utils import crypto 
 from models import DBUser,Base
 
@@ -173,7 +173,8 @@ except Exception as e:
 # 初始化LangChain的DeepSeek模型
 try:
     # 初始化LangChain的DeepSeek聊天模型
-    ehall_agent = EhallAgent(verbose=False)
+    kb_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "backend/data", "通识选课2.csv")
+    ehall_agent = EhallAgent(verbose=False, knowledge_base_path=kb_path)
     logger.info("LangChain DeepSeek模型初始化成功")
 except Exception as e:
     logger.error(f"LangChain初始化失败: {e}")
