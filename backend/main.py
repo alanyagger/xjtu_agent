@@ -3,11 +3,58 @@
 FastAPI 交小荣智能教务后端
 """
 
+from models import DBUser, Base
+from sqlalchemy import create_engine, Column, String, Boolean
+from sqlalchemy.orm import declarative_base
+from sqlalchemy.orm import sessionmaker, Session
+from config import config
+from crypto_utils import crypto 
+import os
+
+# 数据库配置
+SQLALCHEMY_DATABASE_URL = "sqlite:///./users.db"
+engine = create_engine(SQLALCHEMY_DATABASE_URL, connect_args={"check_same_thread": False})
+UserSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+
+# 数据库初始化单例
+class DatabaseInitializer:
+    _initialized = False
+    
+    @classmethod
+    def initialize(cls):
+        if not cls._initialized:
+            # 创建所有表
+            Base.metadata.create_all(bind=engine)
+            # 插入初始用户（直接使用 DBUser 模型）
+            cls._insert_default_user()
+            
+            cls._initialized = True
+    
+    @classmethod
+    def _insert_default_user(cls):
+        db = UserSessionLocal()
+        try:
+            if not db.query(DBUser).first():
+                # 直接创建 DBUser 实例，绕过 UserCreate
+                default_user = DBUser(
+                    username="2021000000",
+                    email="default@example.com",
+                    # 使用 crypto 工具加密密码
+                    encrypted_password=crypto.encrypt("default_password")
+                )
+                db.add(default_user)
+                db.commit()
+        finally:
+            db.close()
+
+# 立即初始化数据库（在任何导入前）
+DatabaseInitializer.initialize()
+
+
 import json
 import time
 import uuid
 import logging
-import os
 from typing import List, Dict, Any, Optional
 from datetime import datetime, timedelta
 from jose import JWTError, jwt
@@ -16,16 +63,12 @@ from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from fastapi.responses import StreamingResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
-from sqlalchemy import create_engine, Column, String, Boolean
-from sqlalchemy.orm import declarative_base
-from sqlalchemy.orm import sessionmaker, Session
 from pydantic import BaseModel, EmailStr, field_validator
 import redis
-from config import config
 from passlib.context import CryptContext
 from agents.demo_rag import EhallAgent  
-from crypto_utils import crypto 
-from models import DBUser,Base
+
+
 
 # ---------- 新增数据库配置（用户表） ----------
 SQLALCHEMY_DATABASE_URL = "sqlite:///./users.db"  # 数据库文件存在backend目录
@@ -39,8 +82,6 @@ ACCESS_TOKEN_EXPIRE_MINUTES = 30
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
-
-Base.metadata.create_all(bind=engine)  # 创建表（首次运行自动建表）
 
 # ---------- Pydantic模型（接口入参/出参） ----------
 class UserCreate(BaseModel):
