@@ -78,14 +78,11 @@ def get_grades() -> dict:
     return call_get_data("成绩查询", {})
 
 @tool
-def get_all_courses(limit: int = 10) -> list:
+def get_all_courses() -> list:
     """
-    获取全部课程，仅返回前 limit 门（默认10门）。
+    获取全部课程。
     """
-    data = call_get_data("课程查询", {})
-    if isinstance(data, list):
-        return data[:limit]
-    return data
+    return call_get_data("课程查询", {})
 
 
 
