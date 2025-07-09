@@ -12,7 +12,7 @@ sys.path.append(backend_dir)
 from langchain_openai import ChatOpenAI
 from langchain.agents import create_openai_tools_agent, AgentExecutor
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
-from config import config
+from  config import config
 
 from tools.ehall_tools import (
     get_my_courses,
