@@ -28,7 +28,7 @@ Evironment dependencies can be **downloaded** from provided links in the table b
   </tr>
   <tr>
     <td>Redis</td>
-    <td><a href="https://github.com/tporadowski/redis/releases">Redis</a></td>
+    <td><a href="https://github.com/tporadowski/redis/releases">Redis(截至5.0已停止维护)//</a><a href="https://github.com/redis-windows/redis-windows/releases">Redis(社区编译新版本)</a></td>
   </tr>
   <tr>
     <td>Chrome Driver</td>
