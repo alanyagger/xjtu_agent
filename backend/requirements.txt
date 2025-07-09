@@ -15,3 +15,4 @@ passlib==1.7.4
 pydantic[email]    
 python-multipart==0.0.20
 selenium==4.34.0
+pandas==2.3.1
