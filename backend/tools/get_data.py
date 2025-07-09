@@ -64,8 +64,10 @@ func_map = {
     "全校课程": {
         "url": "https://ehall.xjtu.edu.cn/jwapp/sys/kcbcx/modules/qxkcb/qxfbkccx.do",
         "data": lambda args: {
-            "pageSize": args.pageSize,
-            "pageNumber": args.pageNumber,
+            # "pageSize": args.pageSize,
+            # "pageNumber": args.pageNumber,
+            "pageSize": 478,
+            "pageNumber": 1,
             "querySetting": json.dumps([
                 {"name": "XNXQDM", "value": args.term, "linkOpt": "and", "builder": "equal"},
                 [
@@ -81,8 +83,10 @@ func_map = {
         "url": "https://ehall.xjtu.edu.cn/jwapp/sys/kccx/modules/kccx/kcxxcx.do",
         "data": lambda args: {
             "KCZTDM": "1",
-            "pageSize": args.pageSize,
-            "pageNumber": args.pageNumber
+            # "pageSize": args.pageSize,
+            # "pageNumber": args.pageNumber
+            "pageSize": "12000",
+            "pageNumber": "1"
         },
         "referer": "https://ehall.xjtu.edu.cn/jwapp/sys/kcbcx/*default/index.do"
     },
@@ -191,7 +195,54 @@ def fetch_course(cookie_dict, func_name, args):
     if response.status_code == 200:
         try:
             json_data = response.json()
-            print(f"✅ [{func_name}] 接口返回成功，解析并保存 JSON：")
+            print(f"✅ [{func_name}] 接口返回成功，解析并保存过滤后的 JSON：")
+            
+            # 字段筛选配置：按功能名称区分
+            if func_name == "成绩查询":
+                # 成绩查询：保留4个字段
+                keep_fields = {
+                    "KCM": "课程名称",
+                    "ZCJ": "成绩",
+                    "XF": "学分",
+                    "KCXZDM_DISPLAY": "课程类型"
+                }
+                target_key = "xscjcx"  # 成绩数据的外层键
+            elif func_name == "课程查询":
+                # 课程查询：保留4个字段
+                keep_fields = {
+                    "KCM": "开课名称",
+                    "KKDWDM_DISPLAY": "开课学院",
+                    "XS": "学时",
+                    "XF": "学分"
+                }
+                target_key = "kcxxcx"  # 课程查询数据的外层键
+            elif func_name == "全校课程":
+                # 全校课程：保留6个字段
+                keep_fields = {
+                    "KCM": "开课名称",
+                    "KKDWDM_DISPLAY": "开课学院",
+                    "XS": "学时",
+                    "XF": "学分",
+                    "SKJS": "授课教师",
+                    "XXXQDM_DISPLAY": "开课校区"
+                }
+                target_key = "qxfbkccx"  # 全校课程数据的外层键（根据实际JSON结构确定）
+            else:
+                # 其他功能不筛选
+                keep_fields = None
+                target_key = None
+
+            # 执行筛选逻辑
+            if keep_fields and target_key and "datas" in json_data and target_key in json_data["datas"] and "rows" in json_data["datas"][target_key]:
+                filtered_rows = []
+                for row in json_data["datas"][target_key]["rows"]:
+                    # 提取并映射需要的字段（忽略不存在的字段）
+                    filtered_row = {new_key: row[old_key] for old_key, new_key in keep_fields.items() if old_key in row}
+                    filtered_rows.append(filtered_row)
+                # 替换原始数据为筛选后的数据
+                json_data["datas"][target_key]["rows"] = filtered_rows
+                json_data["datas"][target_key]["totalSize"] = len(filtered_rows)  # 更新总条数
+
             save_json_to_file(json_data, f"{func_name}_data.json")
         except Exception as e:
             print(f"JSON解析失败: {e}")

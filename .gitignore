@@ -22,6 +22,7 @@ user.db
 logs/
 *.log
 backend/logs
+*.json
 
 # Node.js 依赖
 node_modules/

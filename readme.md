@@ -15,7 +15,7 @@ conda   v24.9.2
 ```
 ```shell
 conda create -n xjtu_agent python=3.12
-pip -r requirements.txt
+pip install -r requirements.txt
 ```
 Evironment dependencies can be **downloaded** from provided links in the table below:
 <table style="width:100%">
