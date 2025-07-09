@@ -10,6 +10,7 @@ conda   v24.9.2
 ```
 ```shell
 conda create -n xjtu_agent python=3.12
+pip -r requirements.txt
 ```
 Evironment dependencies can be **downloaded** from provided links in the table below:
 <table style="width:100%">
@@ -27,7 +28,11 @@ Evironment dependencies can be **downloaded** from provided links in the table b
   </tr>
   <tr>
     <td>Redis</td>
-    <td><a href="https://repo.anaconda.com/archive/">Redis</a></td>
+    <td><a href="https://github.com/tporadowski/redis/releases">Redis</a></td>
+  </tr>
+  <tr>
+    <td>Chrome Driver</td>
+    <td><a href="https://developer.chrome.com/docs/chromedriver">Chrome</a></td>
   </tr>
 </table>
 

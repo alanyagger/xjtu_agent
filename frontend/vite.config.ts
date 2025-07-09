@@ -17,6 +17,11 @@ export default defineConfig({
         changeOrigin: true,  // 允许跨域
         rewrite: (path) => path.replace(/^\/api/, ''),  // 去掉请求路径中的/api前缀
       },
+      '/chat': {
+        target: 'http://localhost:8000', // 后端接口地址
+        changeOrigin: true, // 允许跨域
+        rewrite: (path) => path.replace(/^\/chat/, '/chat'), // 去掉请求路径中的/chat前缀
+      },
     },
   },
 });
