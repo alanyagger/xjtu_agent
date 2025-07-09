@@ -64,8 +64,8 @@ func_map = {
     "全校课程": {
         "url": "https://ehall.xjtu.edu.cn/jwapp/sys/kcbcx/modules/qxkcb/qxfbkccx.do",
         "data": lambda args: {
-            "pageSize": 478,
-            "pageNumber": 1,
+            "pageSize": args.pageSize,
+            "pageNumber": args.pageNumber,
             "querySetting": json.dumps([
                 {"name": "XNXQDM", "value": args.term, "linkOpt": "and", "builder": "equal"},
                 [
@@ -81,8 +81,8 @@ func_map = {
         "url": "https://ehall.xjtu.edu.cn/jwapp/sys/kccx/modules/kccx/kcxxcx.do",
         "data": lambda args: {
             "KCZTDM": "1",
-            "pageSize": "12000",
-            "pageNumber": "1"
+            "pageSize": args.pageSize,
+            "pageNumber": args.pageNumber
         },
         "referer": "https://ehall.xjtu.edu.cn/jwapp/sys/kcbcx/*default/index.do"
     },
@@ -211,6 +211,9 @@ def main():
     parser.add_argument("--date", type=str, default="2025-07-15", help="空闲教室日期")
     parser.add_argument("--start", type=str, default="1", help="起始节次")
     parser.add_argument("--end", type=str, default="8", help="结束节次")
+    parser.add_argument("--pageSize", type=int, default=10, help="每页条数")
+    parser.add_argument("--pageNumber", type=int, default=1, help="页码")
+
     args = parser.parse_args()
     
     global USERNAME, PASSWORD
