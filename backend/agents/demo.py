@@ -74,7 +74,7 @@ class EhallAgent:
         return ChatPromptTemplate.from_messages([
             ("system", prompt_template),
             MessagesPlaceholder(variable_name="chat_history", optional=True),
-            ("human", "{input}"),
+            ("human", "{input}"), 
             MessagesPlaceholder(variable_name="agent_scratchpad"),
         ])
     
