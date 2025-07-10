@@ -211,7 +211,8 @@ def fetch_course(cookie_dict, func_name, args):
                     "KCM": "课程名称",
                     "ZCJ": "成绩",
                     "XF": "学分",
-                    "KCXZDM_DISPLAY": "课程类型"
+                    "KCXZDM_DISPLAY": "课程类型",
+                    "XNXQDM": "学期"
                 }
                 target_key = "xscjcx"  # 成绩数据的外层键
             elif func_name == "课程查询":

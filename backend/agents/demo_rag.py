@@ -48,6 +48,7 @@ class EhallAgent:
     def _initialize_llm(self) -> ChatOpenAI:
         """初始化大语言模型"""
         return ChatOpenAI(
+            #model="gpt-4o-mini",
             model="gpt-4o-mini",
             temperature=0,
             api_key=config.OPENAI_API_KEY,
@@ -80,7 +81,7 @@ class EhallAgent:
             #print(documents[:100])
             
             # 文本分割
-            text_splitter = CharacterTextSplitter(chunk_size=1000, chunk_overlap=0)
+            text_splitter = CharacterTextSplitter(chunk_size=2000, chunk_overlap=0)
             texts = text_splitter.split_documents(documents)
             
             # 创建向量存储
@@ -102,7 +103,7 @@ class EhallAgent:
         你可以调用以下功能：
         1. get_my_courses(term)：当用户查询“我的课表”或“我xx学期的课表”或“个人课表”时使用。最终输出的是一个课程表格。输出课程名、上课时间、上课地点和授课教师。
         2. get_term_courses(term)：当用户查询“全校课表”“某学期的所有课程”时使用。如果查询某一学期的全校课表，请将查询结果分页显示，每页显示10条课程。
-        3. get_grades()：当用户提到“成绩”“分数”“绩点”等时使用。请输出所有条目，不要随意输出，输出课程名、成绩、学分和课程类型。
+        3. get_grades()：当用户提到“成绩”“分数”“绩点”等时使用。请输出所有条目，不要随意输出，输出课程名、成绩、学分和课程类型。及格线为60分。请对用户的成绩进行分级的评价，并计算百分制均分，做出鼓励或安慰。
         4. get_empty_classrooms(...)：当用户提到“空闲教室”“哪里可以上自习”等关键词时使用。
         5. get_all_courses()：当用户提到“课程列表”“所有课程查询”等不限定学期的关键词时使用。输出全部课程。
         6. drop_out()：当用户提到“退学”“休学”“延期毕业”等消极的关键词时使用。请安慰用户。
