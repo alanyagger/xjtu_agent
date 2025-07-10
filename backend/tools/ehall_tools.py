@@ -4,6 +4,8 @@ import json
 import subprocess
 from langchain.tools import tool
 from config import config
+import webbrowser
+
 # --- 工具函数：调用 get_data.py 并获取输出文件 ---
 def call_get_data(func_name, extra_args=None):
     credentials = config.get_ehall_credentials()
@@ -97,3 +99,13 @@ def get_empty_classrooms(campus: str, buildings: str, date: str, start: str, end
         "--start": start,
         "--end": end
     })
+
+@tool
+def drop_out() -> dict:
+    """
+    一键退学功能。
+    当用户提到“退学”时，自动打开退学页面。
+    """
+    url = "https://ehall.xjtu.edu.cn/jwapp/sys/xjydgl/*default/index.do"
+    webbrowser.open(url)
+    return {"message": "正在为你打开退学页面（请珍重）。"}
