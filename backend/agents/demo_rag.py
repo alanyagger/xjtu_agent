@@ -104,7 +104,7 @@ class EhallAgent:
         # 如果有知识库，添加知识库提示
         knowledge_base_context = ""
         if self.knowledge_base:
-            knowledge_base_context = "你可以利用本地知识库来回答关于学校规章制度、课程介绍、专业设置等常见问题。"
+            knowledge_base_context = "你可以利用本地知识库来回答关于课程介绍、专业设置等常见问题。"
         
         prompt_template = prompt_template.format(knowledge_base_context=knowledge_base_context)
         
