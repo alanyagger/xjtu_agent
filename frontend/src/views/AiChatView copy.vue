@@ -9,11 +9,7 @@
     
     <div class="chat-container">
       <!-- 左侧历史记录栏 -->
-      <div 
-        class="history-panel" 
-        :class="{ 'show-panel': showHistory }"
-        :style="{ zIndex: showHistory ? 10 : 1 }"
-      >
+      <div class="history-panel">
         <div class="panel-header">
           <h3>历史记录</h3>
           <el-button 
@@ -38,17 +34,6 @@
       
       <!-- 右侧聊天区域 -->
       <div class="chat-main">
-        <!-- 历史记录切换按钮 -->
-        <div class="toggle-history-btn" @click="toggleHistory">
-          <el-icon v-if="showHistory || isMobile">
-            <Menu />
-          </el-icon>
-          <el-icon v-else>
-            <ArrowLeft />
-          </el-icon>
-          <span v-if="!isMobile">{{ showHistory ? '隐藏记录' : '显示记录' }}</span>
-        </div>
-        
         <ul class="ai-chat-list" ref="aiChatListRef">
           <li class="ai-chat-item init-item">
             <!-- 初始化消息内容 -->
@@ -62,6 +47,7 @@
               <div class="ai-chat-title">交小荣</div>
               <div class="ai-chat-text">当前为未登录状态，可进行简单对话</div>
               <div class="ai-chat-text">如需获取教务相关信息，请先登录</div>
+         
             </div>
           </li>
           <li
@@ -78,11 +64,13 @@
                 v-if="item.role === 'user'"
                 :icon="UserFilled"
                 :size="40"
+                class="user-avatar"
               />
               <el-avatar
                 v-if="item.role === 'assistant'"
                 src="https://img1.baidu.com/it/u=2640995470,2945739766&fm=253&fmt=auto&app=120&f=JPEG?w=500&h=500"
                 :size="40"
+                class="ai-avatar"
               />
             </div>
             <div
@@ -112,7 +100,7 @@
                 >
                   重新回答
                 </span>
-                <div class="ai-chat-operate-icons" :class="{ disabled: sendBtnDisabled }">
+                <div class="operate-icon-box" :class="{ disabled: sendBtnDisabled }">
                   <el-icon @click="copyRecord(item, index)" class="icon-btn">
                     <DocumentCopy />
                   </el-icon>
@@ -129,12 +117,11 @@
           <div class="ai-chat-form-box">
             <textarea
               v-model="problemText"
-              :rows="isMobile ? 3 : 4"
+              :rows="4"
               placeholder="在此输入您想要了解的内容..."
               @keydown.enter.exact.prevent="sendQuestion"
               @keydown.enter.shift.exact.prevent="problemText += '\n'"
               class="chat-input"
-              :style="{ fontSize: isMobile ? '16px' : '13px' }"
             ></textarea>
             <div class="chat-form-footer">
               <div class="btns">
@@ -149,7 +136,6 @@
                   :disabled="sendBtnDisabled"
                   @click="sendQuestion"
                   class="send-btn"
-                  :size="isMobile ? 'large' : 'default'"
                 >
                   发送
                 </el-button>
@@ -163,62 +149,24 @@
 </template>
 
 <script setup lang="ts">
-// 导入组件和图标
+// 导入HeaderView组件
 import HeaderView from "@/components/HeaderView.vue";
-import { UserFilled, Delete, Loading, DocumentCopy, Menu, ArrowLeft } from "@element-plus/icons-vue";
+import { UserFilled, Delete, Loading, DocumentCopy } from "@element-plus/icons-vue";
 import { onBeforeUnmount, onMounted, ref, watch } from "vue";
 import { ElMessage } from "element-plus";
 import { copyToClipboard } from "@/utils/commonUtil.ts";
-import { getToken } from "@/utils/auth.ts";
+import { getToken } from "@/utils/auth.ts"; // 导入获取token的工具函数
 
-// 响应式相关状态
-const isMobile = ref(false);
-const showHistory = ref(false);
+// 新增：登录状态变量
+const isLoggedIn = ref(false);
 
-// 检查屏幕尺寸，判断是否为移动端（更精确的判断）
-const checkScreenSize = () => {
-  // 使用更精确的移动设备检测
-  const userAgent = navigator.userAgent.toLowerCase();
-  const mobileRegex = /mobile|android|iphone|ipad|ipod|blackberry|iemobile|opera mini/i;
-  isMobile.value = mobileRegex.test(userAgent) || window.innerWidth <= 768;
-  
-  // 移动端默认隐藏历史记录
-  if (isMobile.value) {
-    showHistory.value = false;
-  }
-};
-
-// 切换历史记录显示/隐藏
-const toggleHistory = () => {
-  showHistory.value = !showHistory.value;
-  // 移动端切换历史记录时，禁用背景滚动
-  document.body.style.overflow = showHistory.value ? 'hidden' : '';
-};
-
-// 组件挂载时检查屏幕尺寸
+// 组件挂载时检测登录状态
 onMounted(() => {
-  checkScreenSize();
-  // 监听窗口大小变化
-  window.addEventListener('resize', checkScreenSize);
-  
-  if (aiChatListRef.value) createMutationServer(aiChatListRef.value);
-  // 初始化时尝试从本地存储恢复会话
-  const savedSessionId = localStorage.getItem("chatSessionId");
-  if (savedSessionId) {
-    currentSessionId.value = savedSessionId;
-  }
-});
+  // 检查localStorage中是否有token（与登录页逻辑一致）
+  const token = localStorage.getItem('token');
+  isLoggedIn.value = !!token; // 存在token则视为已登录
 
-// 组件卸载时移除事件监听
-onBeforeUnmount(() => {
-  problemTextWatcher();
-  if (chatListObserver) chatListObserver.disconnect();
-  window.removeEventListener('resize', checkScreenSize);
-  
-  // 保存会话ID到本地存储
-  if (currentSessionId.value) {
-    localStorage.setItem("chatSessionId", currentSessionId.value);
-  }
+  if (aiChatListRef.value) createMutationServer(aiChatListRef.value);
 });
 
 // 扩展ChatItem类型，增加历史记录关联ID
@@ -245,14 +193,14 @@ const maxCharCount = ref<number>(300);
 // 历史记录相关
 let chatHistory = ref<HistoryItem[]>([]);
 let currentHistoryId = ref<string | null>(null);
-let currentSessionId = ref<string | null>(null); // 会话ID，用于保持上下文
+let currentSessionId = ref<string | null>(null); // 新增：会话ID，用于保持上下文
 
 // 生成唯一ID
 const generateId = () => {
   return Date.now().toString(36) + Math.random().toString(36).substr(2, 5);
 };
 
-// 发送问题
+// 发送问题（核心修改）
 const sendQuestion = () => {
   if (sendBtnDisabled.value || !problemText.value.trim()) {
     if (!problemText.value.trim()) ElMessage.warning("请输入内容");
@@ -282,14 +230,9 @@ const sendQuestion = () => {
   problemText.value = "";
   // 调用后端/chat/接口
   callChatApi(historyId, userMessage);
-  
-  // 在移动端发送消息后自动隐藏键盘
-  if (isMobile.value) {
-    document.activeElement?.blur();
-  }
 };
 
-// 调用后端/chat/接口
+// 调用后端/chat/接口（核心新增）
 const callChatApi = async (historyId: string, userMessage: string) => {
   try {
     const token = getToken();
@@ -302,10 +245,13 @@ const callChatApi = async (historyId: string, userMessage: string) => {
 
     // 准备请求数据
     const requestData = {
-      user_id: localStorage.getItem("username") || "anonymous",
+      user_id: localStorage.getItem("username") || "anonymous", // 从登录信息中获取用户ID
       message: userMessage,
-      session_id: currentSessionId.value || ""
+      session_id: currentSessionId.value || "" // 传递当前会话ID保持上下文
     };
+
+    // console.log("当前用户", localStorage.getItem("userId"));
+    // console.log("请求问题:", userMessage);
 
     // 添加AI回复占位符
     const aiIndex = chatList.value.length;
@@ -321,17 +267,20 @@ const callChatApi = async (historyId: string, userMessage: string) => {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "Authorization": `Bearer ${token}`
+        "Authorization": `Bearer ${token}` // 添加认证头
       },
       body: JSON.stringify(requestData)
     });
+
+    // console.log("请求数据:", requestData);
+    // console.log("响应状态:", response.status);
 
     if (!response.ok) {
       throw new Error(`请求失败: ${response.statusText}`);
     }
 
     const result = await response.json();
-    // 更新会话ID
+    // 更新会话ID（首次请求会生成新ID，后续保持不变）
     currentSessionId.value = result.session_id;
     // 更新AI回复内容
     chatList.value[aiIndex].content = result.message;
@@ -369,12 +318,6 @@ const jumpToHistory = (history: HistoryItem) => {
     targetEl.scrollIntoView({ behavior: "smooth", block: "center" });
     targetEl.classList.add("highlight");
     setTimeout(() => targetEl.classList.remove("highlight"), 2000);
-    
-    // 移动端点击历史记录后自动隐藏历史面板
-    if (isMobile.value) {
-      showHistory.value = false;
-      document.body.style.overflow = ''; // 恢复滚动
-    }
   }
 };
 
@@ -382,14 +325,8 @@ const jumpToHistory = (history: HistoryItem) => {
 const clearHistory = () => {
   chatHistory.value = [];
   currentHistoryId.value = null;
-  currentSessionId.value = null;
+  currentSessionId.value = null; // 同时重置会话ID
   ElMessage.success("历史记录已清空");
-  
-  // 清空历史记录后关闭面板（移动端）
-  if (isMobile.value) {
-    showHistory.value = false;
-    document.body.style.overflow = '';
-  }
 };
 
 // 重新回答
@@ -463,14 +400,33 @@ const problemTextWatcher = watch(
     }
   }
 );
+
+// 生命周期
+onMounted(() => {
+  if (aiChatListRef.value) createMutationServer(aiChatListRef.value);
+  // 初始化时尝试从本地存储恢复会话
+  const savedSessionId = localStorage.getItem("chatSessionId");
+  if (savedSessionId) {
+    currentSessionId.value = savedSessionId;
+  }
+});
+
+onBeforeUnmount(() => {
+  problemTextWatcher();
+  if (chatListObserver) chatListObserver.disconnect();
+  // 保存会话ID到本地存储
+  if (currentSessionId.value) {
+    localStorage.setItem("chatSessionId", currentSessionId.value);
+  }
+});
 </script>
 
 <style lang="scss" scoped>
-// 头部样式
+// 头部样式（从App.vue迁移）
 .page-layout-header {
   display: flex;
   justify-content: center;
-  min-width: 100%;
+  min-width: 760px;
   height: 66px;
   background: #fff;
   border-bottom: 1px solid #eee;
@@ -478,13 +434,13 @@ const problemTextWatcher = watch(
 }
 
 .page-layout-row {
-  width: 100%;
+  width: 1440px;
   display: flex;
   background: #fff;
   flex-direction: column;
 }
 
-// 聊天容器样式
+// 调整聊天容器样式（减去头部高度）
 .ai-chat-view {
   display: flex;
   flex-direction: column; 
@@ -492,137 +448,78 @@ const problemTextWatcher = watch(
   background-color: #f0f7ff;
   min-height: 100vh;
   box-sizing: border-box;
-  width: 100%;
-  overflow-x: hidden; // 防止横向滚动
 
   .chat-container {
     display: flex;
     width: 100%;
+    max-width: 1400px;
+    /* 高度调整为减去头部高度 */
     height: calc(100vh - 66px);
     box-shadow: 0 0 15px rgba(0, 0, 0, 0.08);
     border-radius: 12px;
     overflow: hidden;
-    margin: 0 auto;
+    margin: 0 auto; /* 居中显示 */
   }
 }
 
-// 历史记录切换按钮
-.toggle-history-btn {
-  position: absolute;
-  top: 15px;
-  left: 15px;
-  z-index: 10;
-  background-color: #fff;
-  border: 1px solid #e5e9f2;
-  border-radius: 20px;
-  padding: 6px 12px;
-  display: flex;
-  align-items: center;
-  cursor: pointer;
-  font-size: 14px;
-  color: #666;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
-  transition: all 0.2s ease;
-
-  // 增大移动端点击区域
-  @media (max-width: 768px) {
-    width: 44px;
-    height: 44px;
-    padding: 0;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-  }
-
-  &:hover {
-    background-color: #f5f7fa;
-    color: #4096ff;
-  }
-
-  el-icon {
-    margin-right: 6px;
-    font-size: 16px;
-
-    @media (max-width: 768px) {
-      margin-right: 0;
-      font-size: 20px;
-    }
-  }
-
-  span {
-    @media (max-width: 768px) {
-      display: none;
-    }
+// 历史记录选中样式增强
+.history-item {
+  &.active {
+    background-color: #e6f7ff;
+    font-weight: 500;
+    border-left: 3px solid #1890ff; // 左侧高亮边框
   }
 }
 
-// 历史记录面板
+// 高亮动画
+@keyframes highlight {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(64, 150, 255, 0);
+  }
+  50% {
+    box-shadow: 0 0 0 5px rgba(64, 150, 255, 0.2); // 闪烁边框效果
+  }
+}
+
+// 左侧历史记录面板
 .history-panel {
   width: 280px;
   background-color: #fff;
   border-right: 1px solid #e5e9f2;
   display: flex;
   flex-direction: column;
-  transition: transform 0.3s ease, width 0.3s ease;
+}
 
-  // 在移动端占满屏幕
-  @media (max-width: 768px) {
-    width: 85%;
-    max-width: 300px;
-    box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
-  }
+.panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px 20px;
+  border-bottom: 1px solid #e5e9f2;
+}
 
-  // 历史记录面板隐藏状态
-  &:not(.show-panel) {
-    transform: translateX(-100%);
-    position: absolute;
-    height: calc(100vh - 66px);
-    z-index: 5;
-  }
+.clear-btn {
+  padding: 0;
+  font-size: 12px;
+}
 
-  .panel-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 15px 20px;
-    border-bottom: 1px solid #e5e9f2;
-  }
+.history-list {
+  flex: 1;
+  overflow-y: auto;
+  padding: 10px 0;
+}
 
-  .clear-btn {
-    padding: 0;
-    font-size: 12px;
-  }
-
-  .history-list {
-    flex: 1;
-    overflow-y: auto;
-    padding: 10px 0;
-  }
-
-  .history-item {
-    padding: 15px 20px; // 增加内边距，便于触摸
-    font-size: 14px;
-    cursor: pointer;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    transition: background-color 0.2s;
-    
-    // 增大移动端点击区域
-    @media (max-width: 768px) {
-      padding: 18px 20px;
-      font-size: 15px;
-    }
-    
-    &:hover {
-      background-color: #f5f7fa;
-    }
-    
-    &.active {
-      background-color: #e6f7ff;
-      font-weight: 500;
-      border-left: 3px solid #1890ff;
-    }
+.history-item {
+  padding: 12px 20px;
+  font-size: 14px;
+  cursor: pointer;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  transition: background-color 0.2s;
+  
+  &:hover {
+    background-color: #f5f7fa;
   }
 }
 
@@ -632,8 +529,6 @@ const problemTextWatcher = watch(
   display: flex;
   flex-direction: column;
   background-color: #f9fafc;
-  position: relative; // 为了容纳绝对定位的切换按钮
-  width: 100%;
 }
 
 // 对话列表
@@ -643,15 +538,8 @@ const problemTextWatcher = watch(
   flex-direction: column;
   overflow-y: auto;
   padding: 20px 30px;
-  padding-top: 45px; // 预留切换按钮空间
   scrollbar-width: thin;
   scrollbar-color: #d1d5db transparent;
-
-  // 移动端调整内边距
-  @media (max-width: 768px) {
-    padding: 15px;
-    padding-top: 60px;
-  }
 
   &::-webkit-scrollbar {
     width: 6px;
@@ -668,11 +556,6 @@ const problemTextWatcher = watch(
     align-items: flex-start;
     margin-bottom: 25px;
     position: relative;
-
-    // 移动端增加间距
-    @media (max-width: 768px) {
-      margin-bottom: 20px;
-    }
 
     // 淡入动画
     &.fade-in {
@@ -714,19 +597,8 @@ const problemTextWatcher = watch(
     margin-right: 15px;
     flex-shrink: 0;
 
-    // 移动端增大头像
-    @media (max-width: 768px) {
-      margin-right: 10px;
-    }
-
     .el-avatar {
       transition: transform 0.2s ease;
-
-      // 移动端增大头像
-      @media (max-width: 768px) {
-        width: 44px !important;
-        height: 44px !important;
-      }
 
       &:hover {
         transform: scale(1.05);
@@ -749,27 +621,12 @@ const problemTextWatcher = watch(
     max-width: 80%;
     word-break: break-word;
     border-radius: 12px;
-    font-size: 14px;
-
-    // 移动端调整样式
-    @media (max-width: 768px) {
-      padding: 14px 18px;
-      max-width: 85%;
-      font-size: 16px;
-      line-height: 1.6;
-      border-radius: 14px;
-    }
 
     // 初始化盒子样式
     &.init-box {
       background-color: #e6f7ff;
       box-shadow: 0 2px 8px rgba(0, 95, 219, 0.1);
       border: 1px solid #b3d8ff;
-
-      // 移动端调整初始化消息
-      @media (max-width: 768px) {
-        padding: 16px 20px;
-      }
 
       .ai-chat-title {
         font-size: 18px;
@@ -783,11 +640,6 @@ const problemTextWatcher = watch(
         color: #333;
         line-height: 1.6;
         margin-bottom: 8px;
-
-        // 移动端调整字体
-        @media (max-width: 768px) {
-          font-size: 15px;
-        }
       }
     }
 
@@ -827,26 +679,16 @@ const problemTextWatcher = watch(
       opacity: 0.3;
       transition: opacity 0.2s ease;
 
-      // 移动端调整操作区
-      @media (max-width: 768px) {
-        margin-top: 8px;
-        font-size: 13px;
-      }
-
+      // 鼠标悬停时显示操作按钮
       &:hover {
         opacity: 1;
       }
 
-      // 重新回答按钮
+      // 重复回答按钮
       .re-reply-btn {
         color: #1890ff;
         cursor: pointer;
         transition: color 0.2s;
-
-        // 移动端隐藏文字，保留图标
-        @media (max-width: 768px) {
-          display: none;
-        }
 
         &:hover {
           color: #096dd9;
@@ -858,46 +700,28 @@ const problemTextWatcher = watch(
         }
       }
 
-      // 操作图标容器（移动端优化）
-      .ai-chat-operate-icons {
+      // 操作图标
+      .operate-icon-box {
         display: flex;
         align-items: center;
-        gap: 15px; // 增加图标间距
 
-        // 移动端增大图标
-        @media (max-width: 768px) {
-          gap: 20px;
-        }
-      }
+        .icon-btn {
+          color: #8c8c8c;
+          font-size: 14px;
+          margin-left: 16px;
+          cursor: pointer;
+          transition: all 0.2s;
 
-      // 操作图标
-      .icon-btn {
-        color: #8c8c8c;
-        font-size: 14px;
-        margin-left: 16px;
-        cursor: pointer;
-        transition: all 0.2s;
-
-        // 移动端增大图标和点击区域
-        @media (max-width: 768px) {
-          font-size: 18px;
-          margin: 0;
-          width: 36px;
-          height: 36px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
+          &:hover {
+            color: #1890ff;
+            transform: scale(1.1);
+          }
         }
 
-        &:hover {
-          color: #1890ff;
-          transform: scale(1.05);
+        &.disabled .icon-btn {
+          color: #ccc;
+          cursor: not-allowed;
         }
-      }
-
-      &.disabled .icon-btn {
-        color: #ccc;
-        cursor: not-allowed;
       }
     }
   }
@@ -908,16 +732,6 @@ const problemTextWatcher = watch(
   padding: 15px 30px 20px;
   background-color: #fff;
   border-top: 1px solid #e5e9f2;
-
-  // 移动端调整内边距
-  @media (max-width: 768px) {
-    padding: 15px;
-    padding-bottom: 20px;
-    // 适配虚拟键盘
-    position: sticky;
-    bottom: 0;
-    z-index: 5;
-  }
 }
 
 .ai-chat-form-box {
@@ -925,11 +739,6 @@ const problemTextWatcher = watch(
   border-radius: 12px;
   position: relative;
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
-
-  // 移动端优化输入框样式
-  @media (max-width: 768px) {
-    border-radius: 16px;
-  }
 
   &:focus-within {
     border-color: #4096ff;
@@ -951,14 +760,6 @@ const problemTextWatcher = watch(
   box-sizing: border-box;
   background-color: #f9fafc;
 
-  // 移动端优化
-  @media (max-width: 768px) {
-    padding: 18px 20px;
-    font-size: 16px;
-    border-radius: 16px;
-    min-height: 50px;
-  }
-
   &::-webkit-scrollbar {
     width: 5px;
   }
@@ -971,11 +772,6 @@ const problemTextWatcher = watch(
   &::placeholder {
     color: #c9cdd4;
     font-size: 14px;
-
-    // 移动端调整
-    @media (max-width: 768px) {
-      font-size: 16px;
-    }
   }
 }
 
@@ -989,11 +785,6 @@ const problemTextWatcher = watch(
   right: 0;
   box-sizing: border-box;
 
-  // 移动端调整
-  @media (max-width: 768px) {
-    padding: 0 20px 15px;
-  }
-
   // 内容数字提示
   .btns {
     display: flex;
@@ -1005,11 +796,6 @@ const problemTextWatcher = watch(
   .content-tips {
     font-size: 12px;
     color: #8c8c8c;
-
-    // 移动端调整
-    @media (max-width: 768px) {
-      font-size: 13px;
-    }
   }
 
   .text-warning {
@@ -1022,14 +808,6 @@ const problemTextWatcher = watch(
     height: 36px;
     border-radius: 6px;
     transition: all 0.2s ease;
-
-    // 移动端增大发送按钮
-    @media (max-width: 768px) {
-      min-width: 90px;
-      height: 42px;
-      font-size: 16px;
-      border-radius: 8px;
-    }
 
     &:not(:disabled):hover {
       transform: translateY(-2px);
@@ -1077,15 +855,6 @@ const problemTextWatcher = watch(
   }
 }
 
-@keyframes highlight {
-  0%, 100% {
-    box-shadow: 0 0 0 0 rgba(64, 150, 255, 0);
-  }
-  50% {
-    box-shadow: 0 0 0 5px rgba(64, 150, 255, 0.2);
-  }
-}
-
 // 响应式设计
 @media (max-width: 1024px) {
   .chat-container {
@@ -1094,73 +863,36 @@ const problemTextWatcher = watch(
   }
   
   .history-panel {
-    position: absolute;
-    height: calc(100vh - 66px);
-    z-index: 5;
-    transform: translateX(-100%);
-  }
-  
-  .history-panel.show-panel {
-    transform: translateX(0);
+    width: 100%;
+    max-height: 200px;
+    border-right: none;
+    border-bottom: 1px solid #e5e9f2;
   }
   
   .chat-main {
     flex: 1;
-    width: 100%;
-  }
-  
-  .ai-chat-list {
-    padding: 15px;
-    padding-top: 45px;
-  }
-  
-  .ai-chat-form-wrapper {
-    padding: 15px;
-  }
-  
-  .ai-chat-content-box {
-    max-width: 85%;
   }
 }
 
 @media (max-width: 768px) {
   .ai-chat-view {
-    padding: 0;
+    padding: 10px 0;
   }
   
   .chat-container {
     border-radius: 0;
-    height: calc(100vh - 66px);
   }
   
-  .ai-chat-content-box {
-    max-width: 80%;
+  .history-panel {
+    max-height: 150px;
   }
   
-  .toggle-history-btn {
-    padding: 6px;
-    
-    span {
-      display: none;
-    }
-    
-    el-icon {
-      margin-right: 0;
-    }
+  .ai-chat-list {
+    padding: 15px;
   }
-
-  // 修复移动端输入框被键盘遮挡问题
+  
   .ai-chat-form-wrapper {
-    position: sticky;
-    bottom: 0;
-    background-color: white;
-  }
-
-  // 确保在移动设备横屏时也有良好体验
-  @media (orientation: landscape) and (max-width: 768px) {
-    .ai-chat-list {
-      max-height: calc(100vh - 180px);
-    }
+    padding: 15px;
   }
 }
 </style>
