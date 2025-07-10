@@ -350,8 +350,17 @@ const handleRegister = () => {
         });
         ElMessage.success('注册成功，请登录');
         activeTab.value = 'login'; // 切回登录页
-      } catch (error) {
-        console.error('注册失败', error);
+      } catch (error:any) {
+        const errorDetail = error.response?.data?.detail;
+        if(errorDetail?.field === 'username') {
+          ElMessage.error('学号已被注册');
+        } 
+        else if(errorDetail?.field === 'email') {
+          ElMessage.error('邮箱已被注册');
+        }
+        else{
+          ElMessage.error('注册失败，请稍后再试');
+        }
       } finally {
         registerLoading.value = false;
       }

@@ -115,7 +115,8 @@ def get_user_db():
 
 def get_db_user(db: Session, username: str):
     return db.query(DBUser).filter(DBUser.username == username).first()
-
+def get_db_email(db: Session, email: str):
+    return db.query(DBUser).filter(DBUser.email == email).first()
 def create_db_user(db: Session, user: UserCreate):
     db_user = DBUser(
         username=user.username,
@@ -379,11 +380,19 @@ async def generate_streaming_response(user_id: str, session_id: str, user_messag
 @app.post("/register", response_model=dict)
 def register(user: UserCreate, db: Session = Depends(get_user_db)):
     db_user = get_db_user(db, user.username)
+    db_emali = get_db_email(db, user.email)
     if db_user:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="学号已注册"
+            detail={"field": "username", "msg": "学号已被注册"}
         )
+    
+    if db_emali:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail={"field": "email", "msg": "邮箱已被注册"}  # 返回错误字段和信息
+        )
+    
     create_db_user(db, user)
     return {"message": "注册成功，请登录"}
 
