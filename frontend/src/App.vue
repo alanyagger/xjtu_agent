@@ -1,10 +1,9 @@
 <script setup lang="ts">
-// 移除HeaderView的导入
 </script>
 
 <template>
   <section class="page-layout">
-    <!-- 只保留主体内容区域 -->
+    <!-- 主体内容区域 -->
     <main class="page-layout-content">
       <section class="starter-content">
         <div class="page-layout-row">
@@ -26,7 +25,7 @@
   }
 
   .starter-content {
-    height: 100vh; /* 因移除头部，高度改为100vh */
+    height: 100vh; /* 高度为100vh */
     display: flex;
     justify-content: center;
   }

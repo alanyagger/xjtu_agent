@@ -422,7 +422,7 @@ onBeforeUnmount(() => {
 </script>
 
 <style lang="scss" scoped>
-// 头部样式（从App.vue迁移）
+// 头部样式
 .page-layout-header {
   display: flex;
   justify-content: center;

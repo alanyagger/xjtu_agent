@@ -20,7 +20,17 @@
     "crypto-js": "^4.2.0",
     "element-plus": "^2.6.3",
     "vue": "^3.4.21",
-    "vue-router": "^4.3.0"
+    "vue-router": "^4.3.0",
+    "@fullcalendar/core": "^6.1.10",
+    "@fullcalendar/daygrid": "^6.1.10",
+    "@fullcalendar/interaction": "^6.1.10",
+    "@fullcalendar/timegrid": "^6.1.10",
+    "@fullcalendar/vue3": "^6.1.10",
+    "@ant-design/icons-vue": "^7.0.1",
+    "@fullcalendar/list": "^6.1.15",
+    "ant-design-vue": "^4.2.6",
+    "core-js": "^3.8.3",
+    "dayjs": "^1.11.13"
   },
   "devDependencies": {
     "@types/base-64": "^1.0.2",
@@ -30,6 +40,13 @@
     "scss": "^0.2.4",
     "typescript": "^5.2.2",
     "vite": "^5.2.0",
-    "vue-tsc": "^2.0.6"
+    "vue-tsc": "^2.0.6",
+    "@babel/core": "^7.12.16",
+    "@babel/eslint-parser": "^7.12.16",
+    "@vue/cli-plugin-babel": "~5.0.0",
+    "@vue/cli-plugin-eslint": "~5.0.0",
+    "@vue/cli-service": "~5.0.0",
+    "eslint-plugin-vue": "^8.0.3",
+    "sass-loader": "^16.0.5"
   }
 }

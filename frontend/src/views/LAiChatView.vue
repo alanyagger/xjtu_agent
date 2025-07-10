@@ -34,6 +34,11 @@
       
       <!-- 右侧聊天区域 -->
       <div class="chat-main">
+        <!-- 日历快捷键 -->
+        <div class="calendar-shortcut" @click="showCalendarInfo">
+          <el-icon class="calendar-icon"><Calendar /></el-icon>
+        </div>
+        
         <ul class="ai-chat-list" ref="aiChatListRef">
           <li class="ai-chat-item init-item">
             <!-- 初始化消息内容 -->
@@ -150,13 +155,19 @@
 <script setup lang="ts">
 // 导入HeaderView组件
 import HeaderView from "@/components/LHeaderView.vue";
-import { UserFilled, Delete, Loading, DocumentCopy } from "@element-plus/icons-vue";
+import { UserFilled, Delete, Loading, DocumentCopy, Calendar } from "@element-plus/icons-vue";
 import { onBeforeUnmount, onMounted, ref, watch } from "vue";
 import { ElMessage } from "element-plus";
 import { copyToClipboard } from "@/utils/commonUtil.ts";
 import { getToken } from "@/utils/auth.ts"; // 导入获取token的工具
+import { useRouter} from "vue-router";
+const router = useRouter();
+// 日历快捷键
+const showCalendarInfo = () => {
+  router.push("/calendar");
+};
 
-// 新增：登录状态变量
+// 登录状态变量
 const isLoggedIn = ref(false);
 
 // 组件挂载时检测登录状态
@@ -249,9 +260,6 @@ const callChatApi = async (historyId: string, userMessage: string) => {
       session_id: currentSessionId.value || "" // 传递当前会话ID保持上下文
     };
 
-    // console.log("当前用户", localStorage.getItem("userId"));
-    // console.log("请求问题:", userMessage);
-
     // 添加AI回复占位符
     const aiIndex = chatList.value.length;
     chatList.value.push({
@@ -270,9 +278,6 @@ const callChatApi = async (historyId: string, userMessage: string) => {
       },
       body: JSON.stringify(requestData)
     });
-
-    // console.log("请求数据:", requestData);
-    // console.log("响应状态:", response.status);
 
     if (!response.ok) {
       throw new Error(`请求失败: ${response.statusText}`);
@@ -421,7 +426,37 @@ onBeforeUnmount(() => {
 </script>
 
 <style lang="scss" scoped>
-// 头部样式（从App.vue迁移）
+// 新增：日历快捷键样式
+.calendar-shortcut {
+  position: absolute;
+  right: 20px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background-color: #fff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  z-index: 10;
+
+  &:hover {
+    transform: translateY(-50%) scale(1.1);
+    box-shadow: 0 4px 12px rgba(64, 150, 255, 0.2);
+    background-color: #f0f7ff;
+  }
+
+  .calendar-icon {
+    font-size: 20px;
+    color: #4096ff;
+  }
+}
+
+// 头部样式
 .page-layout-header {
   display: flex;
   justify-content: center;
@@ -459,6 +494,16 @@ onBeforeUnmount(() => {
     overflow: hidden;
     margin: 0 auto; /* 居中显示 */
   }
+}
+
+// 右侧聊天主区域 - 新增相对定位
+.chat-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  background-color: #f9fafc;
+  position: relative; /* 为日历快捷键提供定位参考 */
+  padding-right: 80px; /* 给右侧快捷键留出空间 */
 }
 
 // 历史记录选中样式增强
@@ -870,6 +915,12 @@ onBeforeUnmount(() => {
   
   .chat-main {
     flex: 1;
+    padding-right: 30px;
+  }
+  
+  // 响应式下隐藏日历快捷键
+  .calendar-shortcut {
+    display: none;
   }
 }
 
