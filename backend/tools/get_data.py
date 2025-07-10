@@ -123,7 +123,14 @@ func_map = {
             "pageNumber": 1
         },
         "referer": "https://ehall.xjtu.edu.cn/jwapp/sys/kcbcx/*default/index.do"
+    },
+        
+    "一键退学": {
+        "url": "https://ehall.xjtu.edu.cn/jwapp/sys/xjydgl/*default/index.do",
+        "data": lambda args: {},
+        "referer": "https://ehall.xjtu.edu.cn/jwapp/sys/xjydgl/*default/index.do"
     }
+
 }
 
 def wait_for_mask_disappear(driver, url, timeout=30):
@@ -250,6 +257,37 @@ def fetch_course(cookie_dict, func_name, args):
         print(f"请求失败，状态码：{response.status_code}")
         print(response.text)
 
+def handle_dropout():
+    """自动打开退学界面"""
+    options = ChromeOptions()
+    options.add_argument('--disable-blink-features=AutomationControlled')
+    options.add_argument('--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36')
+    options.add_experimental_option("excludeSwitches", ["enable-automation"])
+    service = ChromeService(executable_path=CHROME_DRIVER_PATH)
+    driver = webdriver.Chrome(service=service, options=options)
+
+    driver.maximize_window()
+    wait = WebDriverWait(driver, 20)
+
+    driver.get(LOGIN_URL)
+    wait.until(EC.element_to_be_clickable((By.NAME, "username"))).send_keys(USERNAME)
+    wait.until(EC.element_to_be_clickable((By.CSS_SELECTOR, 'input[placeholder="请输入密码(Please enter the password)"]'))).send_keys(PASSWORD + Keys.RETURN)
+
+    time.sleep(2)
+
+    if "login" in driver.current_url:
+        driver.quit()
+        raise Exception("登录失败，请检查用户名和密码")
+
+    # 成功登录，打开退学界面
+    print("✅ 登录成功，正在打开一键退学页面...")
+    js = f'window.open("{func_map["一键退学"]["url"]}");'
+    driver.execute_script(js)
+
+    input("111")
+    driver.quit()
+
+
 def main():
     parser = argparse.ArgumentParser(description="爬取西安交大教务系统数据")
     parser.add_argument("--username", required=True, help="统一认证用户名/学号")
@@ -272,6 +310,9 @@ def main():
     PASSWORD = args.password
     
     print(f"Func: {args.func}")
+    if (args.func == "一键退学"):
+        handle_dropout()
+        return
     cookies = selenium_login()
     fetch_course(cookies, args.func, args)
     

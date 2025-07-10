@@ -106,6 +106,4 @@ def drop_out() -> dict:
     一键退学功能。
     当用户提到“退学”时，自动打开退学页面。
     """
-    url = "https://ehall.xjtu.edu.cn/jwapp/sys/xjydgl/*default/index.do"
-    webbrowser.open(url)
-    return {"message": "正在为你打开退学页面（请珍重）。"}
+    return call_get_data("一键退学", {})
