@@ -48,6 +48,71 @@ def call_get_data(func_name, extra_args=None):
     except Exception as e:
         return {"error": f"未知错误: {str(e)}"}
 
+def calculate_gpa(data):
+    """
+    计算各学期加权平均分和总平均分
+    
+    参数:
+        data: 包含成绩数据的字典
+    返回:
+        包含各学期平均分和总平均分的字典
+    """
+    # 提取成绩列表
+    scores = data['datas']['xscjcx']['rows']
+    
+    # 按学期分组
+    term_scores = {}
+    for score in scores:
+        term = score['学期']
+        # 跳过成绩为0的课程（可能是未完成或无效成绩）
+        if score['成绩'] == 0:
+            continue
+        if term not in term_scores:
+            term_scores[term] = []
+        term_scores[term].append(score)
+    
+    # 计算各学期加权平均分
+    term_gpa = {}
+    total_credits = 0.0  # 总学分
+    total_weighted_score = 0.0  # 总加权分数
+    
+    for term, courses in term_scores.items():
+        term_credits = 0.0
+        term_weighted = 0.0
+        
+        for course in courses:
+            credit = course['学分']
+            score = course['成绩']
+            # 跳过学分为0的课程（如某些体育活动）
+            if credit <= 0:
+                continue
+            
+            term_credits += credit
+            term_weighted += credit * score
+        
+        # 计算学期加权平均分
+        if term_credits > 0:
+            term_average = term_weighted / term_credits
+            term_gpa[term] = {
+                'average': round(term_average, 2),
+                'total_credits': round(term_credits, 1),
+                'course_count': len(courses)
+            }
+            
+            # 累加至总学分和总加权分数
+            total_credits += term_credits
+            total_weighted_score += term_weighted
+    
+    # 计算总加权平均分
+    total_average = round(total_weighted_score / total_credits, 2) if total_credits > 0 else 0
+    
+    sorted_term_gpa = dict(sorted(term_gpa.items(), key=lambda x: x[0]))
+
+    return {
+        'term_gpa': sorted_term_gpa,
+        'total_average': total_average,
+        'total_credits': round(total_credits, 1)
+    }
 
 # --- LangChain 工具函数封装 ---
 
@@ -70,7 +135,9 @@ def get_grades() -> dict:
     """
     获取全部学期的成绩。
     """
-    return call_get_data("成绩查询", {})
+    scores_data = call_get_data("成绩查询", {})
+    term_gpa = calculate_gpa(scores_data)
+    return scores_data, term_gpa
 
 @tool
 def get_all_courses() -> list:
