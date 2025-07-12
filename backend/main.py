@@ -3,12 +3,14 @@
 FastAPI 交小荣智能教务后端
 """
 
-from models import DBUser, Base
-from sqlalchemy import create_engine, Column, String, Boolean
+from models import DBUser, Base, DBSchedule
+from sqlalchemy import DateTime, create_engine, Column, String, Boolean, Text, Integer, func
 from sqlalchemy.orm import sessionmaker, Session
 from config import config
 from crypto_utils import crypto 
 import os
+from datetime import datetime
+import uuid
 
 current_user_context = {}
 # 数据库配置
@@ -43,6 +45,19 @@ class DatabaseInitializer:
                     encrypted_password=crypto.encrypt("default_password")
                 )
                 db.add(default_user)
+                db.commit()
+            if not db.query(DBSchedule).first():
+                # 创建默认日程
+                default_schedule = DBSchedule(
+                    id=str(uuid.uuid4()),  # 使用 UUID 生成唯一 ID
+                    user_id="2021000000",
+                    name="默认日程",
+                    start_time=datetime.fromisoformat("2023-10-01T08:00:00Z"),
+                    end_time=datetime.fromisoformat("2023-10-01T09:00:00Z"),
+                    color="#2097f3",
+                    remark="这是一个默认日程"
+                )
+                db.add(default_schedule)
                 db.commit()
         finally:
             db.close()
@@ -95,6 +110,33 @@ class UserCreate(BaseModel):
             raise ValueError('学号必须为数字')
         return v
 
+# ---------- 新增日程相关Pydantic模型 ----------
+class ScheduleCreate(BaseModel):
+    name: str
+    start_time: str  # ISO格式字符串
+    end_time: str    # ISO格式字符串
+    color: Optional[str] = "#2097f3"
+    remark: Optional[str] = ""
+    
+    @field_validator('start_time', 'end_time')
+    def validate_datetime(cls, v):
+        try:
+            # 尝试解析ISO格式
+            datetime.fromisoformat(v.replace("Z", "+00:00"))
+            return v
+        except ValueError:
+            raise ValueError('日期时间格式错误，应为ISO 8601格式（如YYYY-MM-DDTHH:mm:ss）')
+
+
+class ScheduleResponse(BaseModel):
+    id: str
+    name: str
+    start_time: str
+    end_time: str
+    color: str
+    remark: Optional[str]
+    schedule_calendar: dict
+
 class Token(BaseModel):
     access_token: str
     token_type: str
@@ -115,8 +157,10 @@ def get_user_db():
 
 def get_db_user(db: Session, username: str):
     return db.query(DBUser).filter(DBUser.username == username).first()
+
 def get_db_email(db: Session, email: str):
     return db.query(DBUser).filter(DBUser.email == email).first()
+
 def create_db_user(db: Session, user: UserCreate):
     db_user = DBUser(
         username=user.username,
@@ -194,7 +238,7 @@ origins = [
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173"],  # 前端地址
+    allow_origins=origins,  # 前端地址
     allow_credentials=True,
     allow_methods=["*"],  # 允许所有 HTTP 方法
     allow_headers=["*"],  # 允许所有请求头
@@ -458,3 +502,161 @@ async def chat_endpoint(request: ChatRequest):
         message=ai_response,
         timestamp=ai_msg.timestamp
     )
+
+# ---------- 新增日程相关工具函数 ----------
+def schedule_to_dict(schedule: DBSchedule) -> dict:
+    """将数据库日程对象转换为前端需要的字典格式"""
+    return {
+        "id": schedule.id,
+        "name": schedule.name,
+        "start_time": schedule.start_time.strftime("%Y-%m-%dT%H:%M:%S"),
+        "end_time": schedule.end_time.strftime("%Y-%m-%dT%H:%M:%S"),
+        "color": schedule.color,
+        "remark": schedule.remark,
+        "schedule_calendar": {
+            "color": schedule.color,
+            "name": "默认日历"
+        }
+    }
+
+
+def get_schedule_by_id(db: Session, schedule_id: str, user_id: str):
+    """获取指定用户的指定日程"""
+    return db.query(DBSchedule).filter(
+        DBSchedule.id == schedule_id,
+        DBSchedule.user_id == user_id
+    ).first()
+
+
+def create_schedule(db: Session, schedule: ScheduleCreate, user_id: str):
+    """创建新日程"""
+    try:
+        start_time = datetime.fromisoformat(schedule.start_time.replace("Z", "+00:00"))
+        end_time = datetime.fromisoformat(schedule.end_time.replace("Z", "+00:00"))
+    except ValueError:
+        raise HTTPException(status_code=400, detail="日期时间格式错误")
+    
+    if start_time >= end_time:
+        raise HTTPException(status_code=400, detail="开始时间必须早于结束时间")
+    
+    db_schedule = DBSchedule(
+        user_id=user_id,
+        name=schedule.name,
+        start_time=start_time,
+        end_time=end_time,
+        color=schedule.color,
+        remark=schedule.remark
+    )
+    
+    db.add(db_schedule)
+    db.commit()
+    db.refresh(db_schedule)
+    return db_schedule
+
+# ---------- 新增日历API接口 ----------
+@app.get("/api/schedules/", response_model=List[dict])
+def get_schedules(
+    start: Optional[str] = Query(None, description="开始日期（YYYY-MM-DD）"),
+    end: Optional[str] = Query(None, description="结束日期（YYYY-MM-DD）"),
+    db: Session = Depends(get_user_db),
+    current_user: DBUser = Depends(get_current_user)
+):
+    """获取当前用户的日程列表（支持日期范围筛选）"""
+    query = db.query(DBSchedule).filter(DBSchedule.user_id == current_user.username)
+    
+    # 日期筛选
+    if start and end:
+        try:
+            # 将输入的日期字符串转换为datetime对象，时间部分设为00:00:00
+            start_date = datetime.strptime(start, "%Y-%m-%d")
+            # 结束日期设为当天的23:59:59，覆盖一整天
+            end_date = datetime.strptime(end, "%Y-%m-%d") + timedelta(hours=23, minutes=59, seconds=59)
+            
+            # 查询条件：日程的结束时间晚于开始日期，且日程的开始时间早于结束日期
+            query = query.filter(
+                DBSchedule.end_time >= start_date,
+                DBSchedule.start_time <= end_date
+            )
+        except ValueError:
+            raise HTTPException(status_code=400, detail="日期格式错误，应为YYYY-MM-DD")
+
+    return [schedule_to_dict(s) for s in query.all()]
+
+@app.post("/api/schedules/", response_model=dict)
+def create_schedule_api(
+    schedule: ScheduleCreate,
+    db: Session = Depends(get_user_db),
+    current_user: DBUser = Depends(get_current_user)
+):
+    """创建新日程（仅当前用户可见）"""
+    try:
+        # 验证时间逻辑
+        start_time = datetime.fromisoformat(schedule.start_time.replace("Z", "+00:00"))
+        end_time = datetime.fromisoformat(schedule.end_time.replace("Z", "+00:00"))
+    except ValueError:
+        raise HTTPException(status_code=400, detail="日期时间格式错误，应为ISO 8601格式")
+    
+    if start_time >= end_time:
+        raise HTTPException(status_code=400, detail="开始时间必须早于结束时间")
+    
+    # 创建日程，关联当前用户
+    new_schedule = create_schedule(db, schedule, current_user.username)
+    return schedule_to_dict(new_schedule)
+
+
+@app.delete("/api/schedules/{schedule_id}", response_model=dict)
+def delete_schedule(
+    schedule_id: str,
+    db: Session = Depends(get_user_db),
+    current_user: DBUser = Depends(get_current_user)
+):
+    """删除当前用户的日程"""
+    schedule = get_schedule_by_id(db, schedule_id, current_user.username)
+    
+    if not schedule:
+        raise HTTPException(status_code=404, detail="日程不存在或无权访问")
+    
+    db.delete(schedule)
+    db.commit()
+    return {"message": "日程已成功删除", "id": schedule_id}
+
+
+@app.get("/api/schedules/search/", response_model=List[dict])
+def search_schedules(
+    keyword: str = Query(..., description="搜索关键词"),
+    db: Session = Depends(get_user_db),
+    current_user: DBUser = Depends(get_current_user)
+):
+    """搜索当前用户的日程（按标题或描述）"""
+    schedules = db.query(DBSchedule).filter(
+        DBSchedule.user_id == current_user.username,
+        (DBSchedule.name.contains(keyword)) | 
+        (DBSchedule.remark.contains(keyword))
+    ).all()
+    logger.info("f{schedules} schedules found for keyword '{keyword}'")
+    
+    return [schedule_to_dict(s) for s in schedules]
+
+@app.get("/api/schedules/last-updated/", response_model=dict)
+def get_last_schedule_update(
+    db: Session = Depends(get_user_db),
+    current_user: DBUser = Depends(get_current_user)
+):
+    """获取当前用户最后更新的日程时间戳"""
+    # 查询当前用户所有日程中最新的更新时间
+    last_updated = db.query(
+        func.max(func.julianday(DBSchedule.end_time)).label('max_time')
+    ).filter(DBSchedule.user_id == current_user.username).scalar()
+    
+    # 如果没有日程，返回当前时间戳
+    if not last_updated:
+        timestamp = datetime.now().timestamp()
+    else:
+        # 将Julian日期转换为Unix时间戳
+        # SQLite的julianday从公元前4714年11月24日开始，需要转换偏移量
+        timestamp = (last_updated - 2440587.5) * 86400
+    
+    return {
+        "timestamp": str(int(timestamp)),  # 转为整数时间戳字符串
+        "user_id": current_user.username
+    }

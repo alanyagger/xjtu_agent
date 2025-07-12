@@ -41,6 +41,12 @@
           <right-outlined @click="handleChangeTime('next')"/>
         </div>
         <div class="calendar-header-box" style="display: flex">
+          <a-button 
+            class='btn-mg' 
+            @click="refreshSchedules"
+          >
+            刷新
+          </a-button>
           <a-button type="primary" class='btn-mg' @click="addSchedule"><plus-outlined />新建日程</a-button>
           <a-radio-group v-model:value="currentType" class='btn-mg' @change="toggleCurrentType">
             <a-radio-button value="month">月</a-radio-button>
@@ -165,75 +171,79 @@
 <script>
 import HeaderView from "@/components/CHeaderView.vue";
 import FullCalendar from "@fullcalendar/vue3";
-import dayGridPlugin from '@fullcalendar/daygrid'//日历格子显示
-import interactionPlugin from "@fullcalendar/interaction";//交互
-import timeGridPlugin from "@fullcalendar/timegrid";//日历时间轴显示
-import zhLocale from "@fullcalendar/core/locales/zh-cn";//中文
+import dayGridPlugin from '@fullcalendar/daygrid';
+import interactionPlugin from "@fullcalendar/interaction";
+import timeGridPlugin from "@fullcalendar/timegrid";
+import zhLocale from "@fullcalendar/core/locales/zh-cn";
 import dayjs from 'dayjs';
-import { LeftOutlined, RightOutlined, PlusOutlined } from '@ant-design/icons-vue';
+import { LeftOutlined, RightOutlined, PlusOutlined, SyncOutlined } from '@ant-design/icons-vue';
+import { Spin } from 'ant-design-vue';
+import { getToken } from "@/utils/auth.ts";
+import { h } from 'vue';
+
 export default {
-  name: 'HelloWorld',
+  name: 'CalendarView',
   components: {
     FullCalendar,
     LeftOutlined,
     RightOutlined,
     PlusOutlined,
-    HeaderView
+    SyncOutlined,
+    HeaderView,
+    Spin
   },
-  props: {
-  },
-  data(){
+  data() {
     return {
       dayjs,
-      searchValue:'',
-      filteredSchedules: [], // 过滤后的日程
-      showSearchResult: false, // 是否显示搜索结果
-      searchTimer: null, // 防抖计时器
-      currentType:'month',//默认月份面板
-      currentDefaultType:'month',//默认月份面板
-      currentTime:dayjs(),//默认当前时间
-      calendarApi:null,
-      currentTimeShow:null,
-      deleteConfirmVisible: false, // 控制删除确认弹窗显示
-      eventToDelete: null, // 存储待删除的日程ID
-      calendarOptions: {//日历配置
-        plugins: [dayGridPlugin, timeGridPlugin,interactionPlugin ],
+      searchValue: '',
+      filteredSchedules: [],
+      showSearchResult: false,
+      searchTimer: null,
+      currentType: 'month',
+      currentDefaultType: 'month',
+      currentTime: dayjs(),
+      calendarApi: null,
+      currentTimeShow: null,
+      deleteConfirmVisible: false,
+      eventToDelete: null,
+      calendarOptions: {
+        plugins: [dayGridPlugin, timeGridPlugin, interactionPlugin],
         initialView: 'dayGridMonth',
-        headerToolbar:false,
-        firstDay: '1', // 设置一周中显示的第一天是周几，周日是0，周一是1，以此类推
+        headerToolbar: false,
+        firstDay: '1',
         locales: [zhLocale],
         handleWindowResize: true,
         locale: "zh-cn",
-        weekNumberCalculation: 'ISO', // 与firstDay配套使用
-        eventColor: '#3d8eec', // 全部日历日程背景色
-        timeGridEventMinHeight: '20', // 设置事件的最小高度
-        aspectRatio: '2', // 设置日历单元格宽高比
-        height:'100%',
-        fixedWeekCount:false,
-        events: [], // 日程数组
-        eventTimeFormat: { // 时间格式
+        weekNumberCalculation: 'ISO',
+        eventColor: '#3d8eec',
+        timeGridEventMinHeight: '20',
+        aspectRatio: '2',
+        height: '100%',
+        fixedWeekCount: false,
+        events: [],
+        eventTimeFormat: {
           hour: '2-digit',
           minute: '2-digit',
           meridiem: false,
           hour12: false
         },
-        editable: false, // 是否可以进行（拖动、缩放）修改
-        selectable: true, // 是否可以选中日历格
+        editable: false,
+        selectable: true,
         selectMirror: true,
-        selectMinDistance: 0, // 选中日历格的最小距离
-        dayMaxEventRows: 4, // for all non-TimeGrid views
-        moreLinkContent: this.moreLinkContent, //当一块区域内容太多以"+2 more"格式显示时，这个more的名称自定义
+        selectMinDistance: 0,
+        dayMaxEventRows: 4,
+        moreLinkContent: this.moreLinkContent,
         weekends: true,
-        navLinks: false, // “xx周”是否可以被点击，默认false，如果为true则周视图“周几”被点击之后进入日视图
+        navLinks: false,
         selectHelper: false,
-        selectEventOverlap: false, // 相同时间段的多个日程视觉上是否允许重叠，默认为true，允许
-        nowIndicator: true, //周/日视图中显示今天当前时间点（以红线标记），默认false不显示
-        select: this.handleDateClick, //选中日历格事件
-        eventsSet: this.handleEvents, // 事件点击
-        eventClick: this.handleEventClick, // 日程点击信息展示
-        eventResize: this.onEventResize, // 事件时间区间调整
+        selectEventOverlap: false,
+        nowIndicator: true,
+        select: this.handleDateClick,
+        eventsSet: this.handleEvents,
+        eventClick: this.handleEventClick,
+        eventResize: this.onEventResize,
       },
-      addModalVisible: false, // 控制弹窗显示状态
+      addModalVisible: false,
       newSchedule: {
         title: '',
         start: dayjs(),
@@ -241,12 +251,23 @@ export default {
         description: '',
         color: '#2097f3',
       },
-    }
+      loading: false,
+      apiBaseUrl: 'http://localhost:8000/api',
+      currentUser: {
+        username: localStorage.getItem('username') || ''
+      },
+      loadingRefresh: false,
+      isFetchingSchedules: false,
+      searchDebounceTime: 800,
+      cachedSearchResults: {},
+      // 新增：上次加载时间和缓存有效期（毫秒）
+      lastLoadTime: 0,
+      cacheValidDuration: 600000, // 1分钟
+    };
   },
-  mounted(){
-    // 获取用户信息
+  mounted() {
     this.calendarApi = this.$refs.calendarRef.getApi();
-    this.currentTimeShow = dayjs(this.currentTime).format('YYYY 年 MM 月')
+    this.currentTimeShow = dayjs(this.currentTime).format('YYYY 年 MM 月');
     document.querySelector('.eventDeal-wrap')?.classList.add('month-view');
     document.addEventListener('click', (e) => {
       const searchContainer = document.querySelector('.search-container');
@@ -254,41 +275,162 @@ export default {
         this.showSearchResult = false;
       }
     });
+    
+    // 检查本地缓存
+    const cached = localStorage.getItem(`schedules_${this.currentUser.username}`);
+    if (cached) {
+      // 如果有缓存，先加载缓存数据
+      this.processScheduleData(JSON.parse(cached));
+      // 再异步检查更新
+      setTimeout(() => this.checkScheduleUpdate(), 100);
+    } else {
+      // 没有缓存则直接加载
+      this.checkLoginStatus();
+    }
   },
-  async created() {
-    this.spinningBoxRight = true
-    this.getScheduleList()
+  methods: {
+    // 检查登录状态
+    checkLoginStatus() {
+      const token = getToken();
+      const username = localStorage.getItem('username');
+      
+      if (!token || !username) {
+        this.$message.warning('请先登录以查看您的日程');
+        return false;
+      }
+      
+      this.currentUser.username = username;
+      // 检查缓存是否有效
+      const now = Date.now();
+      const lastLoadTime = localStorage.getItem(`lastLoadTime_${this.currentUser.username}`);
+      
+      if (lastLoadTime && (now - parseInt(lastLoadTime) < this.cacheValidDuration)) {
+        // 缓存有效，从本地加载
+        const cached = localStorage.getItem(`schedules_${this.currentUser.username}`);
+        if (cached) {
+          this.processScheduleData(JSON.parse(cached));
+          return true;
+        }
+      }
+      
+      // 缓存无效或不存在，重新加载
+      this.getScheduleList();
+      return true;
+    },
 
-  },
-  methods:{
+    // 获取认证头
+    getAuthHeaders() {
+      const token = getToken();
+      return {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      };
+    },
+    
+    // 检查日程更新（后台异步）
+    async checkScheduleUpdate() {
+      try {
+        // 打印即将发送的认证头
+        const authHeaders = this.getAuthHeaders();
+        console.log('Auth Headers:', authHeaders);
+
+        const response = await fetch(`${this.apiBaseUrl}/schedules/last-updated/`, {
+          method: 'GET',
+          headers: authHeaders
+        });
+
+        console.log('Checking for schedule updates...', authHeaders);
+
+        console.log('Checking for schedule updates...', response);
+        
+        if (!response.ok) throw new Error('检查更新失败');
+        
+        const lastUpdated = await response.json();
+        const localLastUpdated = localStorage.getItem(`lastUpdated_${this.currentUser.username}`);
+        
+        if (!localLastUpdated || lastUpdated.timestamp > localLastUpdated) {
+          // 有更新，刷新数据
+          this.getScheduleList();
+          localStorage.setItem(`lastUpdated_${this.currentUser.username}`, lastUpdated.timestamp);
+        }
+      } catch (error) {
+        console.error('检查更新失败:', error);
+      }
+    },
+    
     // 获取日程列表
-    async getScheduleList() {
-      // let scheduleList =[{
-      //   id: 211,
-      //   calendar_id: 45,
-      //   color: "",
-      //   end_time: "2025-03-24T08:30:00",
-      //   instructions: "",
-      //   name: "测试",
-      //   schedule_calendar: {color: "#aa47bc", name: "测试日历"},
-      //   source: "default",
-      //   start_time: "2025-03-24T08:00:00",
-      // },{
-      //   id: 212,
-      //   calendar_id: 45,
-      //   color: "",
-      //   end_time: "2025-03-25T23:59:00",
-      //   instructions: "",
-      //   name: "跨天测试",
-      //   schedule_calendar: {color: "#aa47bc", name: "测试日历"},
-      //   source: "default",
-      //   start_time: "2025-03-20T00:00:00",
-      // }]
-      let scheduleList=[]
-      this.calendarOptions.events = scheduleList && scheduleList.length ? scheduleList.map((item) => {
-        // 判断是否跨天
+async getScheduleList(forceRefresh = false) {
+  // 添加调用标志，防止循环调用
+  if (this.isFetchingSchedules) return;
+  this.isFetchingSchedules = true;
+
+  try {
+    if (!this.checkLoginStatus()) return;
+
+    // 检查缓存是否存在且在有效期内（默认10分钟）
+    const cacheKey = `schedules_${this.currentUser.username}`;
+    const timeKey = `lastLoadTime_${this.currentUser.username}`;
+    const cacheValidDuration = 10 * 60 * 1000; // 10分钟
+
+    const cachedData = localStorage.getItem(cacheKey);
+    const lastLoadTime = localStorage.getItem(timeKey);
+    
+    // 修复缓存有效性检查逻辑
+    const isCacheValid = cachedData && 
+                        lastLoadTime && 
+                        (Date.now() - parseInt(lastLoadTime)) < cacheValidDuration;
+
+    // 使用有效缓存，不请求后台
+    if (isCacheValid && !forceRefresh) {
+      this.processScheduleData(JSON.parse(cachedData));
+      this.lastLoadTime = parseInt(lastLoadTime);
+      return JSON.parse(cachedData);
+    }
+
+    // 否则请求后台数据
+    this.loading = true;
+    try {
+      const response = await fetch(`${this.apiBaseUrl}/schedules/`, {
+        method: 'GET',
+        headers: this.getAuthHeaders()
+      });
+
+      console.log('Fetching schedules from API...', response);
+    
+      if (!response.ok) throw new Error('获取日程失败');
+    
+      const scheduleList = await response.json();
+      console.log('Fetched schedule list:', scheduleList);
+      this.processScheduleData(scheduleList);
+    
+      // 更新缓存数据和加载时间
+      localStorage.setItem(cacheKey, JSON.stringify(scheduleList));
+      localStorage.setItem(timeKey, Date.now().toString());
+      this.lastLoadTime = Date.now();
+      return scheduleList;
+    } catch (error) {
+      console.error('获取日程失败:', error);
+      this.$message.error('获取日程失败，尝试加载本地缓存');
+    
+      if (cachedData) {
+        this.processScheduleData(JSON.parse(cachedData));
+      } else {
+        this.calendarOptions.events = [];
+        this.$message.info('暂无日程数据');
+      }
+      throw error;
+    } finally {
+      this.loading = false;
+    }
+  } finally {
+    // 重置调用标志
+    this.isFetchingSchedules = false;
+  }},
+
+    // 处理日程数据
+    processScheduleData(scheduleList) {
+      this.calendarOptions.events = scheduleList.map((item) => {
         const isCrossDay = this.isCrossDay(item.start_time, item.end_time);
-        // 格式化显示时间
         let displayTime = '';
         if (isCrossDay) {
           displayTime = `${dayjs(item.start_time).format('MM-DD HH:mm')} - ${dayjs(item.end_time).format('MM-DD HH:mm')}`;
@@ -303,55 +445,31 @@ export default {
           end: dayjs(item.end_time).format('YYYY-MM-DDTHH:mm:00'),
           backgroundColor: item.color ? item.color : '#2097f3',
           borderColor: item.color ? item.color : '#2097f3',
-          textColor: '#fff', // 文字颜色设为白色
-          className: (dayjs(item.end_time)).isBefore(dayjs()) ? "text-normal-gary" : "text-normal",
+          textColor: '#fff',
+          className: dayjs(item.end_time).isBefore(dayjs()) ? "text-normal-gary" : "text-normal",
           extendedProps: {
             start: dayjs(item.start_time).format('YYYY-MM-DD HH:mm'),
             end_time: dayjs(item.end_time).format('YYYY-MM-DD HH:mm'),
-            remark: item.remark,
+            remark: item.remark || '',
             schcolor: item.color || '',
             calendarColor: item.schedule_calendar?.color || '',
             displayTime: displayTime
-          },
-          deleteConfirmVisible: false, // 删除确认弹窗显示状态
-          eventToDelete: null, // 存储待删除的日程ID
-        }
-      }):[]
+          }
+        };
+      });
       
       setTimeout(() => {
         this.autoScaleFullCalendar();
-      },1000)
+      }, 1000);
     },
+    
     // 新增日程
-    addSchedule() {
-      // 打开新建日程弹窗
-      this.addModalVisible = true;
-      
-      // 重置新建日程表单数据
-      this.newSchedule = {
-        title: '',
-        start: dayjs(),
-        end: dayjs().add(1, 'hour'),
-        description: '',
-        color: '#2097f3',
-      };
-    },
-    handleStartTimeChange(startTime) {
-      if (!startTime) return;
-      // 确保结束时间不早于开始时间
-      if (this.newSchedule.end.isBefore(startTime)) {
-        this.newSchedule.end = dayjs(startTime).add(1, 'hour');
-      }
-    },
-
-    // 处理新建日程提交
-    handleAddSchedule() {
+    async handleAddSchedule() {
       if (!this.newSchedule.title.trim()) {
         this.$message.error('请输入日程标题');
         return;
       }
       
-      // 验证时间
       if (this.newSchedule.end.isBefore(this.newSchedule.start)) {
         this.$message.error('结束时间不能早于开始时间');
         return;
@@ -359,259 +477,364 @@ export default {
       
       const loadingInstance = this.$message.loading('正在创建日程...', 0);
       
-      setTimeout(() => {
-        try {
-          // 判断是否跨天
-          const isCrossDay = this.isCrossDay(
-            this.newSchedule.start.format('YYYY-MM-DDTHH:mm:00'),
-            this.newSchedule.end.format('YYYY-MM-DDTHH:mm:00')
-          );
-          
-          // 格式化显示时间
-          let displayTime = '';
-          if (isCrossDay) {
-            displayTime = `${this.newSchedule.start.format('MM-DD HH:mm')} - ${this.newSchedule.end.format('MM-DD HH:mm')}`;
-          } else {
-            displayTime = `${this.newSchedule.start.format('HH:mm')} - ${this.newSchedule.end.format('HH:mm')}`;
-          }
-          
-          // 构造新日程
-          const newEvent = {
-            id: Date.now(),
-            title: this.newSchedule.title,
-            start: this.newSchedule.start.format('YYYY-MM-DDTHH:mm:00'),
-            end: this.newSchedule.end.format('YYYY-MM-DDTHH:mm:00'),
-            
-            backgroundColor: this.newSchedule.color,
-            borderColor: this.newSchedule.color,
-            textColor: '#fff',
-            className: 'text-normal',
-            eventDisplay: 'auto', 
+      try {
+        const scheduleData = {
+          name: this.newSchedule.title,
+          start_time: this.newSchedule.start.format('YYYY-MM-DDTHH:mm:00'),
+          end_time: this.newSchedule.end.format('YYYY-MM-DDTHH:mm:00'),
+          color: this.newSchedule.color,
+          remark: this.newSchedule.description
+        };
+        
+        const response = await fetch(`${this.apiBaseUrl}/schedules/`, {
+          method: 'POST',
+          headers: this.getAuthHeaders(),
+          body: JSON.stringify(scheduleData)
+        });
+        
+        if (!response.ok) throw new Error('创建日程失败');
+        
+        this.addModalVisible = false;
+        loadingInstance();
+        this.$message.success('日程创建成功！');
+        const newSchedule = await response.json();
+
+        // 更新本地缓存
+        this.updateLocalCache(newSchedule);
+    
+        // 无需刷新整个列表，直接添加到前端显示
+        this.processScheduleData([newSchedule], true);
+        
+        // 刷新数据
+        this.refreshSchedules();
+      } catch (error) {
+        loadingInstance();
+        this.$message.error('创建日程失败：' + error.message);
+        console.error('创建日程出错:', error);
+      }
+    },
+
+    // 更新本地缓存
+    updateLocalCache(newSchedule) {
+      const cacheKey = `schedules_${this.currentUser.username}`;
+      const cachedData = localStorage.getItem(cacheKey);
+  
+      if (cachedData) {
+        const schedules = JSON.parse(cachedData);
+        schedules.push(newSchedule);
+    
+        // 按开始时间排序
+        schedules.sort((a, b) => new Date(a.start_time) - new Date(b.start_time));
+    
+        localStorage.setItem(cacheKey, JSON.stringify(schedules));
+      } else {
+        // 如果没有缓存，创建新缓存
+        localStorage.setItem(cacheKey, JSON.stringify([newSchedule]));
+      }
+  
+      // 更新最后加载时间
+      const timeKey = `lastLoadTime_${this.currentUser.username}`;
+      localStorage.setItem(timeKey, Date.now().toString());
+    },
+    
+    // 删除日程
+    async confirmDelete() {
+      if (!this.eventToDelete) {
+        this.deleteConfirmVisible = false;
+        return;
+      }
+      
+      this.loading = true;
+      try {
+        const response = await fetch(`${this.apiBaseUrl}/schedules/${this.eventToDelete}`, {
+          method: 'DELETE',
+          headers: this.getAuthHeaders()
+        });
+        
+        if (!response.ok) throw new Error('删除日程失败');
+        
+        this.$message.success('日程已成功删除');
+        this.refreshSchedules();
+      } catch (error) {
+        this.$message.error('删除日程失败：' + error.message);
+        console.error('删除日程出错:', error);
+      } finally {
+        this.loading = false;
+        this.deleteConfirmVisible = false;
+        this.eventToDelete = null;
+      }
+    },
+    
+    // 搜索功能
+    async handleSearch() {
+      if (!this.searchValue.trim()) {
+        this.filteredSchedules = [];
+        this.showSearchResult = false;
+        return;
+      }
+      
+      const keyword = this.searchValue.trim().toLowerCase();
+      
+      // 检查缓存
+      if (this.cachedSearchResults[keyword]) {
+        this.filteredSchedules = this.cachedSearchResults[keyword];
+        this.showSearchResult = this.filteredSchedules.length > 0;
+        return;
+      }
+      
+      this.loading = true;
+      try {
+        const encodedKeyword = encodeURIComponent(keyword);
+        const response = await fetch(`${this.apiBaseUrl}/schedules/search/?keyword=${encodedKeyword}`, {
+          method: 'GET',
+          headers: this.getAuthHeaders()
+        });
+        
+        if (!response.ok) throw new Error('搜索日程失败');
+        
+        const searchResults = await response.json();
+        
+        const formattedResults = searchResults.map(schedule => {
+          const isCrossDay = this.isCrossDay(schedule.start_time, schedule.end_time);
+          return {
+            id: schedule.id,
+            title: schedule.name,
+            backgroundColor: schedule.color || '#2097f3',
             extendedProps: {
-              start: this.newSchedule.start.format('YYYY-MM-DD HH:mm'),
-              end_time: this.newSchedule.end.format('YYYY-MM-DD HH:mm'),
-              remark: this.newSchedule.description,
-              color: this.newSchedule.color,
-              displayTime: displayTime
-            },
+              start: dayjs(schedule.start_time).format('YYYY-MM-DD HH:mm'),
+              end_time: dayjs(schedule.end_time).format('YYYY-MM-DD HH:mm')
+            }
           };
-          
-          console.log('新日程数据:', newEvent);
-          
-          this.calendarOptions.events.push(newEvent);
-          this.addModalVisible = false;
-          
-          loadingInstance();
-          this.$message.success('日程创建成功！');
-          this.calendarApi.render();
-        } catch (error) {
-          loadingInstance();
-          this.$message.error('创建日程失败：' + error.message);
-          console.error('创建日程出错:', error);
-        }
-      }, 1000);
+        });
+        
+        // 缓存搜索结果（10分钟有效期）
+        this.cachedSearchResults[keyword] = formattedResults;
+        setTimeout(() => {
+          delete this.cachedSearchResults[keyword];
+        }, 600000);
+        
+        this.filteredSchedules = formattedResults;
+        this.showSearchResult = this.filteredSchedules.length > 0;
+      } catch (error) {
+        this.$message.error('搜索日程失败：' + error.message);
+        console.error('搜索日程出错:', error);
+        this.localSearch();
+      } finally {
+        this.loading = false;
+      }
+    },
+    
+    // 本地搜索（API失败时的降级方案）
+    localSearch() {
+      const keyword = this.searchValue.trim().toLowerCase();
+      this.filteredSchedules = this.calendarOptions.events.filter(schedule => {
+        const matchTitle = schedule.title.toLowerCase().includes(keyword);
+        const matchDesc = schedule.extendedProps.remark && 
+                          schedule.extendedProps.remark.toLowerCase().includes(keyword);
+        return matchTitle || matchDesc;
+      });
+      
+      this.showSearchResult = this.filteredSchedules.length > 0;
+    },
+    
+    // 手动刷新日程
+    async refreshSchedules() {
+      if (this.loadingRefresh) return;
+      
+      this.loadingRefresh = true;
+      try {
+        //await this.checkScheduleUpdate();
+        await this.getScheduleList(true);
+        this.$message.success('日程已刷新');
+      } catch (error) {
+        console.error('刷新日程失败:', error);
+        this.$message.error('刷新失败，请重试');
+      } finally {
+        this.loadingRefresh = false;
+      }
+    },
+    
+    // 搜索输入变化处理
+    handleInputChange() {
+      if (this.searchTimer) {
+        clearTimeout(this.searchTimer);
+      }
+      
+      if (!this.searchValue.trim()) {
+        this.filteredSchedules = [];
+        this.showSearchResult = false;
+        return;
+      }
+      
+      this.searchTimer = setTimeout(() => {
+        this.handleSearch();
+      }, this.searchDebounceTime);
     },
     
     // 判断是否跨天
     isCrossDay(startTime, endTime) {
       return dayjs(startTime).format('YYYY-MM-DD') !== dayjs(endTime).format('YYYY-MM-DD');
     },
-    // 处理删除事件（显示确认弹窗）
+    
+    // 处理删除事件
     handleDeleteEvent(eventId) {
-      this.eventToDelete = eventId; // 记录要删除的日程ID
-      this.deleteConfirmVisible = true; // 显示确认弹窗
+      this.eventToDelete = eventId;
+      this.deleteConfirmVisible = true;
     },
-  
-    // 确认删除
-    confirmDelete() {
-      if (this.eventToDelete) {
-        // 从日程数组中过滤掉要删除的日程
-        this.calendarOptions.events = this.calendarOptions.events.filter(
-          event => event.id.toString() !== this.eventToDelete.toString()
-        );
-        // 重新渲染日历
-        this.calendarApi.render();
-        // 提示删除成功
-        this.$message.success('日程已成功删除');
-      }
-      // 关闭弹窗并重置变量
-      this.deleteConfirmVisible = false;
-      this.eventToDelete = null;
-    },
-    // 点击日程事件-查看对应日程
-    handleEventClick(clickInfo){
-      console.log(clickInfo,'event')
+    
+    // 点击日程事件
+    handleEventClick(clickInfo) {
+      console.log(clickInfo, 'event');
     },
     
     // 返回至当前日期
-    setCurrentTime(){
-      this.currentTime = dayjs()
+    setCurrentTime() {
+      this.currentTime = dayjs();
       this.calendarApi.today();
-      // 根据 currentType 重新计算并更新 currentTimeShow
+      
       if (this.currentType === 'day') {
         this.currentTimeShow = dayjs(this.currentTime).format('YYYY年MM月DD日');
       } else if (this.currentType === 'week') {
-        this.currentTimeShow = this.calendarApi.view.title; 
+        this.currentTimeShow = this.calendarApi.view.title;
       } else {
         this.currentTimeShow = dayjs(this.currentTime).format('YYYY 年 MM 月');
       }
     },
     
-    // 日程视图-切换
-    toggleCurrentType(){
+    // 日程视图切换
+    toggleCurrentType() {
       const calendarWrap = document.querySelector('.eventDeal-wrap');
-      if(this.currentType == 'week'){
-        this.$nextTick(function(){
+      if (this.currentType == 'week') {
+        this.$nextTick(function() {
           this.calendarApi = this.$refs.calendarRef.getApi();
-          this.calendarApi.gotoDate(dayjs(this.currentTime).format('YYYY-MM-DD HH:mm'))
-          this.changePanelShow('timeGridWeek')
+          this.calendarApi.gotoDate(dayjs(this.currentTime).format('YYYY-MM-DD HH:mm'));
+          this.changePanelShow('timeGridWeek');
           calendarWrap?.classList.remove('month-view');
-        })
-      }else if(this.currentType == 'month'){
+        });
+      } else if (this.currentType == 'month') {
         this.$nextTick(() => {
-        this.calendarApi = this.$refs.calendarRef.getApi();
-        this.calendarApi.gotoDate(dayjs(this.currentTime).format('YYYY-MM-DD HH:mm'));
-        this.changePanelShow('dayGridMonth');
-        // 添加月视图专属类名
-        calendarWrap?.classList.add('month-view');
-        })
-      }else{
+          this.calendarApi = this.$refs.calendarRef.getApi();
+          this.calendarApi.gotoDate(dayjs(this.currentTime).format('YYYY-MM-DD HH:mm'));
+          this.changePanelShow('dayGridMonth');
+          calendarWrap?.classList.add('month-view');
+        });
+      } else {
         this.$nextTick(() => {
-        this.calendarApi = this.$refs.calendarRef.getApi();
-        this.calendarApi.gotoDate(dayjs(this.currentTime).format('YYYY-MM-DD HH:mm'));
-        this.changePanelShow('timeGridDay');
-        this.currentTimeShow = dayjs(this.currentTime).format('YYYY年MM月DD日');
-        calendarWrap?.classList.remove('month-view');
-      });
+          this.calendarApi = this.$refs.calendarRef.getApi();
+          this.calendarApi.gotoDate(dayjs(this.currentTime).format('YYYY-MM-DD HH:mm'));
+          this.changePanelShow('timeGridDay');
+          this.currentTimeShow = dayjs(this.currentTime).format('YYYY年MM月DD日');
+          calendarWrap?.classList.remove('month-view');
+        });
       }
     },
     
-    changePanelShow(type){
-      this.calendarApi.changeView(type)
+    // 更改面板显示类型
+    changePanelShow(type) {
+      this.calendarApi.changeView(type);
     },
     
-    handleChangeTime(type){
-      let changeTime = null
-      if(type == 'prive'){
-        changeTime = dayjs(this.currentTime).subtract(1,this.currentType)
-      }else{
-        changeTime = dayjs(this.currentTime).add(1,this.currentType)
+    // 时间导航
+    handleChangeTime(type) {
+      let changeTime = null;
+      if (type == 'prive') {
+        changeTime = dayjs(this.currentTime).subtract(1, this.currentType);
+      } else {
+        changeTime = dayjs(this.currentTime).add(1, this.currentType);
       }
-      this.currentTime = changeTime
-      this.currentTimeShow = this.currentType == 'day' ? dayjs(this.currentTime).format('YYYY年MM月DD日'):(this.currentType == 'week' ?
-        this.calendarApi.view.title:
-        dayjs(this.currentTime).format('YYYY 年 MM 月'))
-      this.calendarApi.gotoDate(dayjs(changeTime).format('YYYY-MM-DD HH:mm'))
+      
+      this.currentTime = changeTime;
+      this.currentTimeShow = this.currentType == 'day' 
+        ? dayjs(this.currentTime).format('YYYY年MM月DD日') 
+        : (this.currentType == 'week' 
+          ? this.calendarApi.view.title 
+          : dayjs(this.currentTime).format('YYYY 年 MM 月'));
+      
+      this.calendarApi.gotoDate(dayjs(changeTime).format('YYYY-MM-DD HH:mm'));
     },
     
-    // 增加自适应大小调整的特性
+    // 自适应大小调整
     autoScaleFullCalendar() {
       document.getElementsByClassName('fc-col-header') && document.getElementsByClassName('fc-col-header')[0].removeAttribute('style');
       document.getElementsByClassName('fc-daygrid-body') && document.getElementsByClassName('fc-daygrid-body')[0].removeAttribute('style');
-      let defaultHeigth = document.getElementsByClassName('fc-scrollgrid-sync-table') && document.getElementsByClassName('fc-scrollgrid-sync-table')[0] && document.getElementsByClassName('fc-scrollgrid-sync-table')[0].style.height?document.getElementsByClassName('fc-scrollgrid-sync-table')[0].style.height:''
+      let defaultHeigth = document.getElementsByClassName('fc-scrollgrid-sync-table') && document.getElementsByClassName('fc-scrollgrid-sync-table')[0] && document.getElementsByClassName('fc-scrollgrid-sync-table')[0].style.height?document.getElementsByClassName('fc-scrollgrid-sync-table')[0].style.height:'';
       document.getElementsByClassName('fc-scrollgrid-sync-table') && document.getElementsByClassName('fc-scrollgrid-sync-table')[0].removeAttribute('style');
-      if(document.getElementsByClassName('fc-timegrid-body')&& document.getElementsByClassName('fc-timegrid-body')[0]){
-        // 针对周时间轴的设置
+      
+      if (document.getElementsByClassName('fc-timegrid-body') && document.getElementsByClassName('fc-timegrid-body')[0]) {
         document.getElementsByClassName('fc-timegrid-body')[0].removeAttribute('style');
-        document.querySelector('.fc-timegrid-slots table').removeAttribute('style')
-        document.querySelector('.fc-timegrid-cols table').removeAttribute('style')
+        document.querySelector('.fc-timegrid-slots table').removeAttribute('style');
+        document.querySelector('.fc-timegrid-cols table').removeAttribute('style');
       }
-      document.getElementsByClassName('fc-scrollgrid-sync-table')[0].style.height = defaultHeigth
+      
+      document.getElementsByClassName('fc-scrollgrid-sync-table')[0].style.height = defaultHeigth;
     },
     
     // 月视图日程过多显示样式
-    moreLinkContent(arg){
-      return '还有'+ arg.num +'个日程'
+    moreLinkContent(arg) {
+      return '还有' + arg.num + '个日程';
     },
     
     // 重新渲染日历
-    renderCalendar(){
-      this.calendarApi.render()
-    },
-    handleInputChange() {
-      // 清除之前的计时器
-      if (this.searchTimer) {
-        clearTimeout(this.searchTimer);
-      }
-      
-      // 输入为空时清空结果
-      if (!this.searchValue.trim()) {
-        this.filteredSchedules = [];
-        this.showSearchResult = false;
-        return;
-      }
-      
-      // 设置新的计时器，实现防抖
-      this.searchTimer = setTimeout(() => {
-        this.handleSearch();
-      }, 300);
-    },
-    
-    // 执行搜索逻辑
-    handleSearch() {
-      if (!this.searchValue.trim()) {
-        this.filteredSchedules = [];
-        this.showSearchResult = false;
-        return;
-      }
-      
-      // 过滤匹配的日程
-      const keyword = this.searchValue.trim().toLowerCase();
-      this.filteredSchedules = this.calendarOptions.events.filter(schedule => {
-        // 匹配标题
-        const matchTitle = schedule.title.toLowerCase().includes(keyword);
-        // 匹配描述
-        const matchDesc = schedule.extendedProps.remark && 
-                          schedule.extendedProps.remark.toLowerCase().includes(keyword);
-        return matchTitle || matchDesc;
-      });
-      
-      // 显示搜索结果
-      this.showSearchResult = this.filteredSchedules.length > 0;
+    renderCalendar() {
+      this.calendarApi.render();
     },
     
     // 点击搜索结果中的日程
     handleScheduleClick(schedule) {
-      // 隐藏搜索结果
       this.showSearchResult = false;
-      
-      // 跳转到该日程的日期
       this.calendarApi.gotoDate(schedule.start);
       
-      // 根据日程类型切换视图
       if (this.currentType !== 'day') {
         this.currentType = 'day';
         this.toggleCurrentType();
       }
       
-      // 高亮显示该日程（可以通过添加特殊样式实现）
       this.highlightSchedule(schedule.id);
-      
-      // 清空搜索框
       this.searchValue = '';
     },
     
     // 高亮显示指定日程
     highlightSchedule(eventId) {
-      // 移除之前的高亮
       document.querySelectorAll('.fc-event-highlight').forEach(el => {
         el.classList.remove('fc-event-highlight');
       });
       
-      // 添加新的高亮
       setTimeout(() => {
         const eventEl = document.querySelector(`[data-event-id="${eventId}"]`);
         if (eventEl) {
           eventEl.classList.add('fc-event-highlight');
-          // 滚动到该元素
           eventEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
           
-          // 3秒后移除高亮
           setTimeout(() => {
             eventEl.classList.remove('fc-event-highlight');
           }, 3000);
         }
       }, 500);
+    },
+    
+    // 处理开始时间变化
+    handleStartTimeChange(date) {
+      // 确保结束时间不早于开始时间
+      if (date && this.newSchedule.end.isBefore(date)) {
+        this.newSchedule.end = dayjs(date).add(1, 'hour');
+      }
+    },
+    
+    // 处理日期选择
+    handleDateClick(info) {
+      this.addModalVisible = true;
+      this.newSchedule.start = dayjs(info.startStr);
+      this.newSchedule.end = dayjs(info.startStr).add(1, 'hour');
+    },
+    
+    // 处理事件加载完成
+    handleEvents(events) {
+      // 日历事件加载完成后的回调
+    },
+    
+    // 处理事件调整
+    onEventResize(eventInfo) {
+      // 事件大小调整后的回调
     }
   }
 }
@@ -956,5 +1179,11 @@ export default {
   100% {
     box-shadow: 0 0 0 0 rgba(32, 151, 243, 0);
   }
+}
+
+// 刷新按钮样式优化
+:deep(.ant-btn-icon-only) {
+  margin-right: 10px;
+  border-radius: 4px;
 }
 </style>
