@@ -963,6 +963,10 @@ async getScheduleList(forceRefresh = false) {
       padding-bottom: 10px ; // 新增，设置日程与下边框距离，按需改
     }
   }
+  &:not(.month-view) { 
+    max-width: 1100px; // 示例宽度，可自行修改
+    margin: 0 auto;
+  }
 }
 .font-bold{
   font-weight: 600;
