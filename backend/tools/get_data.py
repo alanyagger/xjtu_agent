@@ -129,7 +129,16 @@ func_map = {
         "url": "https://ehall.xjtu.edu.cn/jwapp/sys/xjydgl/*default/index.do",
         "data": lambda args: {},
         "referer": "https://ehall.xjtu.edu.cn/jwapp/sys/xjydgl/*default/index.do"
+    },
+
+    "培养方案":{"url": "https://ehall.xjtu.edu.cn/jwapp/sys/jwpubapp/modules/pyfa/kzkccx.do",
+        "data": lambda args: {
+            "PYFADM": "24ac40bb3d594cb0b1e036f7ce354120",
+        },
+        "referer": "https://ehall.xjtu.edu.cn/jwapp/sys/kcbcx/*default/index.do"
     }
+
+    
 
 }
 
@@ -235,6 +244,18 @@ def fetch_course(cookie_dict, func_name, args):
                     "XXXQDM_DISPLAY": "开课校区"
                 }
                 target_key = "qxfbkccx"  # 全校课程数据的外层键（根据实际JSON结构确定）
+            elif func_name == "培养方案":
+                keep_fields = {
+                    "KCM": "开课名称",
+                    "KCH": "课程号",
+                    "KCXZDM_DISPLAY": "修读类型",
+                    "KZM": "课程种类",
+                    "KKDWDM_DISPLAY": "开课学院",
+                    "XS": "学时",
+                    "XF": "学分",
+                    "XNXQ": "开课学期"
+                }
+                target_key = "kzkccx"
             else:
                 # 其他功能不筛选
                 keep_fields = None

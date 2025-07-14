@@ -174,3 +174,10 @@ def drop_out() -> dict:
     当用户提到“退学”时，自动打开退学页面。
     """
     return call_get_data("一键退学", {})
+
+@tool
+def get_scheme() -> list:
+    """
+    获取全部课程。
+    """
+    return call_get_data("培养方案", {})
