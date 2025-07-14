@@ -167,46 +167,6 @@
                 </div>
             </div>
         </section>
-
-        <!-- 系统配置 -->
-        <section class="mb-12">
-            <h2 class="text-2xl font-bold mb-6 text-gray-800">系统配置</h2>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div class="bg-white rounded-lg shadow p-6">
-                    <h3 class="text-lg font-semibold mb-4 text-gray-800">会话配置</h3>
-                    <ul class="space-y-3">
-                        <li class="flex justify-between">
-                            <span class="text-gray-600">最大历史消息数</span>
-                            <span class="font-medium">{{ MAX_HISTORY_MESSAGES }}</span>
-                        </li>
-                        <li class="flex justify-between">
-                            <span class="text-gray-600">最大消息长度</span>
-                            <span class="font-medium">{{ MAX_MESSAGE_LENGTH }} 字符</span>
-                        </li>
-                        <li class="flex justify-between">
-                            <span class="text-gray-600">会话过期时间</span>
-                            <span class="font-medium">{{ SESSION_EXPIRE_TIME }} 秒</span>
-                        </li>
-                        <li class="flex justify-between">
-                            <span class="text-gray-600">对话过期时间</span>
-                            <span class="font-medium">{{ CONVERSATION_EXPIRE_TIME }} 秒</span>
-                        </li>
-                    </ul>
-                </div>
-
-                <div class="bg-white rounded-lg shadow p-6">
-                    <h3 class="text-lg font-semibold mb-4 text-gray-800">AI角色配置</h3>
-                    <div class="space-y-4">
-                        {% for role_id, role_info in AI_ROLES.items() %}
-                        <div>
-                            <h4 class="font-medium text-gray-800">{{ role_info.name }}</h4>
-                            <p class="text-sm text-gray-600 mt-1">{{ role_info.prompt }}</p>
-                        </div>
-                        {% endfor %}
-                    </div>
-                </div>
-            </div>
-        </section>
     </main>
 
     <!-- 页脚 -->
