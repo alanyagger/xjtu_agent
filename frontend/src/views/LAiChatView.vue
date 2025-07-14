@@ -34,6 +34,32 @@
             {{ history.question }}
           </div>
         </div>
+        
+        <!-- 通知公告区域 -->
+        <div class="notifications-section">
+          <div class="notifications-header">
+            <h3>通知公告</h3>
+          </div>
+          <div class="notifications-list">
+            <a 
+              :href="notice.link" 
+              class="notification-item" 
+              v-for="(notice, index) of notifications" 
+              :key="index"
+              target="_blank"
+            >
+              <div class="notification-title">
+                {{ notice.title }}
+              </div>
+              <div class="notification-time">{{ notice.publish_time }}</div>
+            </a>
+            
+            <!-- 无通知时显示 -->
+            <div class="no-notifications" v-if="notifications.length === 0">
+              暂无通知
+            </div>
+          </div>
+        </div>
       </div>
       
       <!-- 右侧聊天区域 -->
@@ -171,35 +197,17 @@
 <script setup lang="ts">
 // 导入组件和图标
 import HeaderView from "@/components/LHeaderView.vue";
-import { UserFilled, Delete, Loading, DocumentCopy, Menu, ArrowLeft, Calendar } from "@element-plus/icons-vue";
+import { UserFilled, Delete, Loading, DocumentCopy, Menu, ArrowLeft, Calendar, ExternalLink } from "@element-plus/icons-vue";
 import { onBeforeUnmount, onMounted, ref, watch } from "vue";
 import { ElMessage } from "element-plus";
 import { copyToClipboard } from "@/utils/commonUtil.ts";
 import { getToken } from "@/utils/auth.ts";
 import { useRouter} from "vue-router";
 const router = useRouter();
+
 // 日历快捷键
 const showCalendarInfo = () => {
   router.push("/calendar");
-};
-// 新增：移动端检测和历史记录切换状态
-const isMobile = ref(false);
-const showHistory = ref(false);
-
-// 检查屏幕尺寸，判断是否为移动端
-const checkScreenSize = () => {
-  // 结合用户代理和屏幕宽度判断
-  const userAgent = navigator.userAgent.toLowerCase();
-  const mobileRegex = /mobile|android|iphone|ipad|ipod|blackberry|iemobile|opera mini/i;
-  isMobile.value = mobileRegex.test(userAgent) || window.innerWidth <= 768;
-  
-  // 移动端默认隐藏历史记录
-  if (isMobile.value) {
-    showHistory.value = false;
-  } else {
-    // 桌面端默认显示历史记录
-    showHistory.value = true;
-  }
 };
 
 // 切换历史记录显示/隐藏
@@ -208,9 +216,6 @@ const toggleHistory = () => {
   // 移动端切换历史记录时，禁用背景滚动
   document.body.style.overflow = showHistory.value ? 'hidden' : '';
 };
-
-// 登录状态变量
-const isLoggedIn = ref(false);
 
 // 组件挂载时初始化
 onMounted(() => {
@@ -229,6 +234,9 @@ onMounted(() => {
   if (savedSessionId) {
     currentSessionId.value = savedSessionId;
   }
+
+  // 初始化通知公告数据
+  initNotifications();
 });
 
 // 组件卸载时清理
@@ -256,6 +264,14 @@ interface HistoryItem {
   userIndex: number;
 }
 
+// 通知公告类型定义（根据提供的数据格式）
+interface NotificationItem {
+  title: string;
+  link: string;
+  publish_time: string;
+  isNew?: boolean;
+}
+
 // 状态定义
 let chatList = ref<ExtendedChatItem[]>([]);
 let loadingIndex = ref<number | null | undefined>();
@@ -268,9 +284,64 @@ let chatHistory = ref<HistoryItem[]>([]);
 let currentHistoryId = ref<string | null>(null);
 let currentSessionId = ref<string | null>(null);
 
+// 通知公告相关
+let notifications = ref<NotificationItem[]>([]);
+
+// 登录状态变量
+const isLoggedIn = ref(false);
+
 // 生成唯一ID
 const generateId = () => {
   return Date.now().toString(36) + Math.random().toString(36).substr(2, 5);
+};
+
+// 初始化通知公告数据（使用提供的格式）
+const initNotifications = () => {
+  // 使用提供的通知数据
+  notifications.value = [
+    {
+      "title": "[培养方案]关于启动2024级本科生劳动教育并继续做好2023级本科...",
+      "link": "https://dean.xjtu.edu.cn/info/1176/8522.htm",
+      "publish_time": "12-10",
+      "isNew": true
+    },
+    {
+      "title": "[学籍管理]2025年经济与金融学院接收本科生转专业考核安排",
+      "link": "https://dean.xjtu.edu.cn/info/1095/9189.htm",
+      "publish_time": "07-11",
+      "isNew": true
+    },
+    {
+      "title": "[竞赛安排]2025年全国大学生嵌入式芯片与系统设计竞赛FPGA创新...",
+      "link": "https://dean.xjtu.edu.cn/info/1172/9187.htm",
+      "publish_time": "07-10"
+    },
+    {
+      "title": "[学籍管理]电子与信息学部计算机科学与技术（国家拔尖计划）202...",
+      "link": "https://dean.xjtu.edu.cn/info/1095/9185.htm",
+      "publish_time": "07-09"
+    },
+    {
+      "title": "[学籍管理]电子与信息学部储能科学与工程（电磁储能）方向2025...",
+      "link": "https://dean.xjtu.edu.cn/info/1095/9184.htm",
+      "publish_time": "07-09"
+    },
+    {
+      "title": "[学籍管理]法学院2025年转专业笔试和面试安排",
+      "link": "https://dean.xjtu.edu.cn/info/1095/9183.htm",
+      "publish_time": "07-08"
+    },
+    {
+      "title": "[学籍管理]电气工程学院2025年本科生转专业宣讲会通知",
+      "link": "https://dean.xjtu.edu.cn/info/1095/9182.htm",
+      "publish_time": "07-08"
+    },
+    {
+      "title": "[课程安排]关于开展中华民族共同体有关讲座的通知",
+      "link": "https://dean.xjtu.edu.cn/info/1093/9181.htm",
+      "publish_time": "07-07"
+    }
+  ];
 };
 
 // 发送问题
@@ -482,10 +553,30 @@ const problemTextWatcher = watch(
     }
   }
 );
+
+// 移动端检测和历史记录切换状态
+const isMobile = ref(false);
+const showHistory = ref(false);
+
+// 检查屏幕尺寸，判断是否为移动端
+const checkScreenSize = () => {
+  // 结合用户代理和屏幕宽度判断
+  const userAgent = navigator.userAgent.toLowerCase();
+  const mobileRegex = /mobile|android|iphone|ipad|ipod|blackberry|iemobile|opera mini/i;
+  isMobile.value = mobileRegex.test(userAgent) || window.innerWidth <= 768;
+  
+  // 移动端默认隐藏历史记录
+  if (isMobile.value) {
+    showHistory.value = false;
+  } else {
+    // 桌面端默认显示历史记录
+    showHistory.value = true;
+  }
+};
 </script>
 
 <style lang="scss" scoped>
-// 新增：日历快捷键样式
+// 日历快捷键样式
 .calendar-shortcut {
   position: absolute;
   right: 20px;
@@ -651,6 +742,7 @@ const problemTextWatcher = watch(
     flex: 1;
     overflow-y: auto;
     padding: 10px 0;
+    max-height: 50%; // 限制历史记录高度，为通知区域留出空间
   }
 
   .history-item {
@@ -678,9 +770,104 @@ const problemTextWatcher = watch(
       border-left: 3px solid #1890ff;
     }
   }
+
+  // 通知公告区域样式
+  .notifications-section {
+    border-top: 1px solid #e5e9f2;
+    padding: 10px 0;
+    max-height: 50%;
+    display: flex;
+    flex-direction: column;
+
+    .notifications-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 15px 20px 10px;
+      border-bottom: 1px solid #f0f0f0;
+
+      h3 {
+        font-size: 15px;
+        color: #333;
+        margin: 0;
+      }
+    }
+
+    .notifications-list {
+      flex: 1;
+      overflow-y: auto;
+      padding: 10px 0;
+
+      // 通知项样式 - 链接形式
+      .notification-item {
+        display: block;
+        padding: 12px 20px;
+        border-bottom: 1px solid #f5f5f5;
+        color: inherit;
+        text-decoration: none;
+        transition: background-color 0.2s;
+
+        &:hover {
+          background-color: #f9f9f9;
+        }
+
+        .notification-title {
+          font-size: 14px;
+          font-weight: 500;
+          margin-bottom: 5px;
+          display: -webkit-box;
+          -webkit-line-clamp: 2;
+          -webkit-box-orient: vertical;
+          overflow: hidden;
+          line-height: 1.5;
+          position: relative;
+          padding-right: 20px; // 为外部链接图标留出空间
+        }
+
+        .notification-time {
+          font-size: 12px;
+          color: #999;
+          margin-top: 5px;
+        }
+
+        // 新通知标签
+        .new-tag {
+          display: inline-block;
+          background-color: #ff4d4f;
+          color: white;
+          font-size: 12px;
+          padding: 0 4px;
+          border-radius: 3px;
+          margin-left: 5px;
+          vertical-align: middle;
+        }
+
+        // 外部链接图标
+        &::after {
+          content: '';
+          position: absolute;
+          right: 20px;
+          top: 50%;
+          transform: translateY(-50%);
+          width: 14px;
+          height: 14px;
+          background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23999'%3E%3Cpath d='M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8z'/%3E%3Cpath d='M16 14v-2h2l-3-3-3 3h2v2h4z'/%3E%3C/svg%3E");
+          background-size: contain;
+          background-repeat: no-repeat;
+        }
+      }
+
+      .no-notifications {
+        padding: 20px;
+        text-align: center;
+        color: #999;
+        font-size: 14px;
+      }
+    }
+  }
 }
 
-// 右侧聊天主区域
+// 右侧聊天区域
 .chat-main {
   flex: 1;
   display: flex;
@@ -704,7 +891,7 @@ const problemTextWatcher = watch(
   // 移动端调整
   @media (max-width: 768px) {
     padding: 15px;
-    padding-top: 60px;
+    padding-top: 45px;
   }
 
   &::-webkit-scrollbar {
@@ -1168,7 +1355,7 @@ const problemTextWatcher = watch(
   .ai-chat-content-box {
     max-width: 85%;
   }
-    // 响应式下隐藏日历快捷键
+  // 响应式下隐藏日历快捷键
   .calendar-shortcut {
     display: none;
   }
