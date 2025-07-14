@@ -8,10 +8,10 @@ import os
 load_dotenv()
 logger = logging.getLogger(__name__)
 
-SMTP_SERVER = os.getenv("SMTP_SERVER") or "smtp.qq.com"
-SMTP_PORT = os.getenv("SMTP_PORT") or 465
-SMTP_USER = os.getenv("SMTP_USER")  or "your-email@qq.com"
-SMTP_PASSWORD = os.getenv("SMTP_PASSWORD") or "your-auth-code"  # 
+SMTP_SERVER = os.getenv("SMTP_SERVER", "smtp.qq.com")
+SMTP_PORT = os.getenv("SMTP_PORT", 465)
+SMTP_USER = os.getenv('SMTP_USER', "")
+SMTP_PASSWORD = os.getenv('SMTP_PASSWORD', "")
 
 def send_reminder_email(to_email: str, schedule_name: str, start_time: str):
     try:
