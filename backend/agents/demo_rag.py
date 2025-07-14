@@ -25,7 +25,8 @@ from tools.ehall_tools import (
     get_grades,
     get_all_courses,
     get_empty_classrooms,
-    drop_out
+    drop_out,
+    add_schedule_db
 )
 
 
@@ -61,6 +62,7 @@ class EhallAgent:
             get_all_courses,
             get_empty_classrooms,
             drop_out,
+            add_schedule_db,  # 添加课程表工具
         ]
     
     def _load_knowledge_base(self, knowledge_base_path) -> FAISS:
@@ -110,6 +112,7 @@ class EhallAgent:
         4. get_empty_classrooms(...)：当用户提到“空闲教室”“哪里可以上自习”等关键词时使用。
         5. get_all_courses()：当用户提到“课程列表”“所有课程查询”等不限定学期的关键词时使用。输出全部课程。
         6. drop_out()：当用户提到“退学”“休学”“延期毕业”等消极的关键词时使用。请安慰用户。
+        7. add_schedule_db(name: str, start_time: str, end_time: str, user_id: str, color: str = "#2097f3", remark: str = "")：当用户提到“添加日程”“创建日程”等关键词时使用。请确保提供日程名称、开始时间、结束时间、用户ID（学号），并可选择性提供颜色和备注信息。
         """
         
         # 如果有知识库，添加知识库提示
