@@ -24,3 +24,4 @@ class DBSchedule(Base):
     color = Column(String, default="#2097f3")
     remark = Column(Text, nullable=True)
     calendar_id = Column(Integer, default=1)  # 日历分类ID
+    reminder_sent = Column(Boolean, default=False) # 是否已发送提醒

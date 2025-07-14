@@ -11,6 +11,8 @@ from crypto_utils import crypto
 import os
 from datetime import datetime
 import uuid
+import logging
+from scheduler import start_scheduler
 
 current_user_context = {}
 # 数据库配置
@@ -419,6 +421,12 @@ async def generate_ai_response(messages: List[Dict[str, Any]]) -> str:
 async def generate_streaming_response(user_id: str, session_id: str, user_message: str, role: str = "assistant", provider: Optional[str] = None, model: Optional[str] = None):
     """生成流式响应"""
 
+
+try:
+    scheduler = start_scheduler()
+    logger.info("日程提醒功能已启用")
+except Exception as e:
+    logger.error(f"启动日程提醒调度器失败：{e}")
 
 # ---------- 新增接口（注册、登录） ----------
 @app.post("/register", response_model=dict)
