@@ -5,6 +5,15 @@ import subprocess
 from langchain.tools import tool
 from config import config
 import webbrowser
+from datetime import datetime
+from sqlalchemy.orm import sessionmaker
+from models import DBSchedule  # 导入数据库模型
+from sqlalchemy import create_engine
+
+# --- 数据库连接配置 ---
+SQLALCHEMY_DATABASE_URL = "sqlite:///./users.db"  # 与FastAPI后端一致
+engine = create_engine(SQLALCHEMY_DATABASE_URL, connect_args={"check_same_thread": False})
+SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 # --- 工具函数：调用 get_data.py 并获取输出文件 ---
 def call_get_data(func_name, extra_args=None):
@@ -146,18 +155,16 @@ def get_all_courses() -> list:
     """
     return call_get_data("课程查询", {})
 
-
-
 @tool
 def get_empty_classrooms(campus: str, buildings: str, date: str, start: str, end: str) -> dict:
     """
     查询指定时间段、校区、教学楼的空闲教室。
     参数
-         campus: 校区中文名，例如 "兴庆校区"
-         buildings: 教学楼中文名，例如 "主楼A"
-         date: 日期，格式如 "2025-07-15"
-         start: 起始节次，字符串数字
-         end: 结束节次，字符串数字
+        campus: 校区中文名，例如 "兴庆校区"
+        buildings: 教学楼中文名，例如 "主楼A"
+        date: 日期，格式如 "2025-07-15"
+        start: 起始节次，字符串数字
+        end: 结束节次，字符串数字
     """
     return call_get_data("空闲教室", {
         "--campus": campus,
@@ -174,6 +181,57 @@ def drop_out() -> dict:
     当用户提到“退学”时，自动打开退学页面。
     """
     return call_get_data("一键退学", {})
+
+@tool
+def add_schedule_db(name: str, start_time: str, end_time: str, user_id: str, color: str = "#2097f3", remark: str = "") -> dict:
+    """
+    直接操作数据库添加新日程。
+    参数:
+        name: 日程名称
+        start_time: 开始时间，ISO格式字符串，如 "2025-07-15T08:30:00"
+        end_time: 结束时间，ISO格式字符串，如 "2025-07-15T09:30:00"
+        user_id: 用户ID（学号）
+        color: 日程颜色，十六进制颜色码，默认为 "#2097f3"
+        remark: 日程备注，默认为空
+    """
+    credentials = config.get_ehall_credentials()
+    user_id = credentials["username"]
+    db = SessionLocal()
+    try:
+        # 转换时间格式
+        start_time_obj = datetime.fromisoformat(start_time)
+        end_time_obj = datetime.fromisoformat(end_time)
+        
+        # 验证时间逻辑
+        if start_time_obj >= end_time_obj:
+            return {"error": "开始时间必须早于结束时间"}
+        
+        # 创建日程对象
+        new_schedule = DBSchedule(
+            user_id=user_id,
+            name=name,
+            start_time=start_time_obj,
+            end_time=end_time_obj,
+            color=color,
+            remark=remark
+        )
+        
+        # 添加到数据库
+        db.add(new_schedule)
+        db.commit()
+        db.refresh(new_schedule)
+        
+        # 返回成功信息
+        return {
+            "success": True,
+            "schedule_id": new_schedule.id,
+            "message": f"日程 '{name}' 已成功添加"
+        }
+    except Exception as e:
+        db.rollback()
+        return {"error": f"添加日程失败: {str(e)}"}
+    finally:
+        db.close()
 
 @tool
 def get_scheme() -> list:

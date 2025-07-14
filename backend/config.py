@@ -102,7 +102,7 @@ class Config:
     # 服务器配置
     HOST: str = os.getenv('HOST', "127.0.0.1")
     PORT: int = int(os.getenv('PORT', 8000))
-    
+        
     @classmethod
     def get_redis_config(cls) -> dict:
         """获取Redis连接配置"""
