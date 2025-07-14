@@ -103,12 +103,6 @@ class Config:
     HOST: str = os.getenv('HOST', "127.0.0.1")
     PORT: int = int(os.getenv('PORT', 8000))
     
-    # 邮箱配置
-    SMTP_SERVER = "smtp.qq.com"
-    SMTP_PORT = 465
-    SMTP_USER = "1830349025@qq.com"  # 你的QQ邮箱
-    SMTP_PASSWORD = "lsrpsewktuimegag"  # QQ邮箱授权码（不是密码）
-    
     
     @classmethod
     def get_redis_config(cls) -> dict:
