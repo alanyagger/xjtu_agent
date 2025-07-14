@@ -20,7 +20,7 @@
             type="text" 
             @click="clearHistory" 
             class="clear-btn"
-            :icon="Delete"
+            :icon="删除"
           >清空</el-button>
         </div>
         <div class="history-list">
@@ -299,12 +299,6 @@ const generateId = () => {
 const initNotifications = () => {
   // 使用提供的通知数据
   notifications.value = [
-    {
-      "title": "[培养方案]关于启动2024级本科生劳动教育并继续做好2023级本科...",
-      "link": "https://dean.xjtu.edu.cn/info/1176/8522.htm",
-      "publish_time": "12-10",
-      "isNew": true
-    },
     {
       "title": "[学籍管理]2025年经济与金融学院接收本科生转专业考核安排",
       "link": "https://dean.xjtu.edu.cn/info/1095/9189.htm",
