@@ -571,7 +571,7 @@ const problemTextWatcher = watch(
   display: flex;
   flex-direction: column;
   transition: transform 0.3s ease, width 0.3s ease;
-  transform: translateX(-100%); // 默认隐藏
+  transform: translateX(0); // 默认隐藏
   // 在移动端占满屏幕
   @media (max-width: 768px) {
     width: 85%;
