@@ -17,7 +17,7 @@
     <!-- 主要内容区域 -->
     <div class="main-content">
       <h1>教育<br>向未来而生</h1>
-      <p>西安交通大学将帮助你成长为一个真正的世界公民，使你具备应对当下日益激烈的竞争和快速变化的环境所必需的知识、技能、能力、品质和韧性。</p>
+      <p></p>
       <button class="custom-button" @click="handleButtonClick">探索更多</button>
       <!-- 新增的动态箭头指示器 -->
       <div class="scroll-indicator" @click="scrollToNextSection">
@@ -28,7 +28,7 @@
 </template>
 
 <script setup lang="ts">
-import videoSrc from '@/assets/gittar.mp4'
+import videoSrc from '@/assets/xjtu.mp4'
 import HeaderView from "@/components/HeaderView.vue";
 import { useRouter } from 'vue-router' // 引入路由钩子
 
@@ -69,7 +69,7 @@ const scrollToNextSection = () => {
   left: 0;
   width: 100%;
   height: 100%;
-  background: rgba(10, 36, 99, 0.4);
+  background: rgba(10, 36, 99, 0.2);
   z-index: 1;
 }
 
@@ -131,7 +131,7 @@ const scrollToNextSection = () => {
 
 .main-content {
   position: absolute;
-  top: 50%;
+  top: 45%;
   left: 50%;
   transform: translate(-50%, -50%);
   text-align: center;
@@ -149,7 +149,7 @@ const scrollToNextSection = () => {
   margin-bottom: 1.2rem; /* 标题与正文间距微调 */
   line-height: 1.2;
   text-shadow: 0 2px 4px rgba(0,0,0,0.3);
-  color: #3674fb;
+  color: #ffffff;
 }
 
 .main-content p {
@@ -175,7 +175,7 @@ const scrollToNextSection = () => {
   transition: all 0.3s ease;
   position: relative;
   overflow: hidden;
-  margin-top: 1.5rem; /* 按钮顶部额外添加微小间距 */
+  margin-top: 6.5rem; /* 按钮顶部额外添加微小间距 */
 }
 
 
