@@ -1,14 +1,26 @@
 import random
 import time
 import json
+import os
 from selenium import webdriver
 from selenium.webdriver import ActionChains, Keys
 from selenium.webdriver.common.by import By
 from selenium.common.exceptions import NoSuchElementException, ElementClickInterceptedException
+from selenium.webdriver.chrome.options import Options as ChromeOptions
+from selenium.webdriver.chrome.service import Service as ChromeService
 
-#edge_options = webdriver.EdgeOptions()
-#edge_options.add_argument('--headless')
-#edge_options.add_argument("--disable-blink-features=AutomationControlled")
+# 获取当前脚本所在目录
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+
+# 修改为相对路径
+CHROME_DRIVER_PATH = os.path.join(BASE_DIR, "chromedriver-win64", "chromedriver.exe")
+
+
+options = ChromeOptions()
+options.add_argument('--disable-blink-features=AutomationControlled')
+options.add_argument('--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36')
+options.add_experimental_option("excludeSwitches", ["enable-automation"])
+service = ChromeService(executable_path=CHROME_DRIVER_PATH)
 
 try:
     with open('../chair_config.json', 'r', encoding='utf-8') as f:
@@ -226,7 +238,7 @@ def get_chair(browser):
     
 def main():
     try:
-        driver = webdriver.Edge()
+        driver = webdriver.Chrome(service=service, options=options)
         driver.get(url)
         time.sleep(2)
         jump_ad(driver)
