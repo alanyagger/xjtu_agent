@@ -17,7 +17,7 @@
     <!-- 主要内容区域 -->
     <div class="main-content">
       <h1>教育<br>向未来而生</h1>
-      <p>西交利物浦大学将帮助你成长为一个真正的世界公民，使你具备应对当下日益激烈的竞争和快速变化的环境所必需的知识、技能、能力、品质和韧性。</p>
+      <p>西安交通大学将帮助你成长为一个真正的世界公民，使你具备应对当下日益激烈的竞争和快速变化的环境所必需的知识、技能、能力、品质和韧性。</p>
       <button class="custom-button" @click="handleButtonClick">探索更多</button>
       <!-- 新增的动态箭头指示器 -->
       <div class="scroll-indicator" @click="scrollToNextSection">
@@ -111,8 +111,8 @@ const scrollToNextSection = () => {
 .arrow {
   width: 30px;
   height: 30px;
-  border-left: 3px solid rgba(251, 54, 64, 0.8);
-  border-bottom: 3px solid rgba(251, 54, 64, 0.8);
+  border-left: 3px solid rgba(54, 103, 251, 0.8);
+  border-bottom: 3px solid rgba(54, 103, 251, 0.8);
   transform: rotate(-45deg);
   margin: 0 auto;
 }
@@ -149,7 +149,7 @@ const scrollToNextSection = () => {
   margin-bottom: 1.2rem; /* 标题与正文间距微调 */
   line-height: 1.2;
   text-shadow: 0 2px 4px rgba(0,0,0,0.3);
-  color: #FB3640;
+  color: #3674fb;
 }
 
 .main-content p {
@@ -161,7 +161,7 @@ const scrollToNextSection = () => {
 }
 
 .custom-button {
-  background: linear-gradient(135deg, #FB3640 0%, #FF6B6B 100%);
+  background: linear-gradient(135deg, #3674fb 0%, #6bb3ff 100%);
   color: white;
   border: none;
   padding: 12px 30px;
@@ -171,7 +171,7 @@ const scrollToNextSection = () => {
   font-weight: 500;
   text-transform: uppercase;
   letter-spacing: 1px;
-  box-shadow: 0 4px 15px rgba(251, 54, 64, 0.3);
+  box-shadow: 0 4px 15px rgba(54, 152, 251, 0.3);
   transition: all 0.3s ease;
   position: relative;
   overflow: hidden;
@@ -181,7 +181,7 @@ const scrollToNextSection = () => {
 
 .custom-button:hover {
   transform: translateY(-3px);
-  box-shadow: 0 6px 20px rgba(251, 54, 64, 0.4);
+  box-shadow: 0 6px 20px rgba(54, 152, 251, 0.4);
 }
 
 .custom-button:active {
