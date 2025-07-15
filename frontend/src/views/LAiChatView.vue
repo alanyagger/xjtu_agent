@@ -623,7 +623,10 @@ const checkScreenSize = () => {
   display: flex;
   flex-direction: column; 
   justify-content: center;
-  background-color: #f0f7ff;
+  // background-color: #f0f7ff;
+  background-image: url('/background.png'); /* 控制图片不重复平铺 */
+  background-repeat: no-repeat; /* 让图片覆盖容器，按比例缩放尽量填满 */
+  background-size: cover; /* 图片定位，可调整显示位置，比如居中 */
   min-height: 100vh;
   box-sizing: border-box;
   width: 100%;
@@ -693,14 +696,24 @@ const checkScreenSize = () => {
 
 // 历史记录面板
 .history-panel {
+  // width: 280px;
+  // background-color: #fff;
+  // border-right: 1px solid #e5e9f2;
+  // display: flex;
+  // flex-direction: column;
+  // transition: transform 0.3s ease, width 0.3s ease;
+  // transform: translateX(-100%); // 默认隐藏
   width: 280px;
-  background-color: #fff;
-  border-right: 1px solid #e5e9f2;
+  /* 半透明背景 + 磨砂玻璃效果 */
+  background-color: rgba(255, 255, 255, 0.5);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px); /* Safari 兼容 */
+  /* 半透明边框，弱化边缘 */
+  border-right: 1px solid rgba(229, 233, 242, 0.2);
   display: flex;
   flex-direction: column;
   transition: transform 0.3s ease, width 0.3s ease;
   transform: translateX(-100%); // 默认隐藏
-
   // 显示面板
   &.show-panel {
     transform: translateX(0);
@@ -861,12 +874,25 @@ const checkScreenSize = () => {
   }
 }
 
+
+// // 右侧聊天区域
+// .chat-main {
+//   flex: 1;
+//   display: flex;
+//   flex-direction: column;
+//   background-color: #f9fafc;
+//   position: relative; // 容纳切换按钮
+//   width: 100%;
+// }
 // 右侧聊天区域
 .chat-main {
   flex: 1;
   display: flex;
   flex-direction: column;
-  background-color: #f9fafc;
+  // background-image: url('/background.png'); /* 控制图片不重复平铺 */
+  // background-repeat: no-repeat; /* 让图片覆盖容器，按比例缩放尽量填满 */
+  // background-size: cover; /* 图片定位，可调整显示位置，比如居中 */
+  // background-position: center; 
   position: relative; // 容纳切换按钮
   width: 100%;
 }
@@ -1138,17 +1164,31 @@ const checkScreenSize = () => {
   }
 }
 
-// 发送区域
+// // 发送区域
+// .ai-chat-form-wrapper {
+//   padding: 15px 30px 20px;
+//   background-color: #fff;
+//   border-top: 1px solid #e5e9f2;
+
+//   // 移动端调整
+//   @media (max-width: 768px) {
+//     padding: 15px;
+//     padding-bottom: 20px;
+//     // 固定在底部，适配虚拟键盘
+//     position: sticky;
+//     bottom: 0;
+//     z-index: 5;
+//   }
+// }
 .ai-chat-form-wrapper {
   padding: 15px 30px 20px;
-  background-color: #fff;
+  /* 这里设置背景为白色且 90% 不透明，可根据需求调整最后一个数值 */
+  background-color: rgba(255, 255, 255, 0.4); 
   border-top: 1px solid #e5e9f2;
 
-  // 移动端调整
   @media (max-width: 768px) {
     padding: 15px;
     padding-bottom: 20px;
-    // 固定在底部，适配虚拟键盘
     position: sticky;
     bottom: 0;
     z-index: 5;
@@ -1184,7 +1224,7 @@ const checkScreenSize = () => {
   font-size: 13px;
   line-height: 1.6;
   box-sizing: border-box;
-  background-color: #f9fafc;
+  background-color: rgba(249, 250, 252, 0.7);
 
   // 移动端优化
   @media (max-width: 768px) {
