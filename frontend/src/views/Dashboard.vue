@@ -30,10 +30,18 @@
 <script setup lang="ts">
 import videoSrc from '@/assets/gittar.mp4'
 import HeaderView from "@/components/HeaderView.vue";
+import { useRouter } from 'vue-router' // 引入路由钩子
+
+const router = useRouter() // 初始化路由实例
 
 const handleButtonClick = () => {
   console.log('按钮被点击了')
-  // 这里可以添加更复杂的业务逻辑
+  // 使用路由跳转到指定页面
+  router.push({ name: 'aiChat' }) // 跳转到名为'dashboard'的路由
+    .catch(error => {
+      console.error('路由跳转失败:', error)
+      // 可以在这里添加失败提示，如显示一个toast
+    })
 }
 
 // 新增的滚动函数
@@ -123,7 +131,7 @@ const scrollToNextSection = () => {
 
 .main-content {
   position: absolute;
-  top: 40%;
+  top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
   text-align: center;
