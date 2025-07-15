@@ -34,6 +34,12 @@ const router = createRouter({
       path: "/calendar",
       name: "calendar",
       component: () => import('@/views/CalendarView.vue')
+    },
+    //主页
+    {
+      path: "/dashboard",
+      name: "dashboard",
+      component: () => import('@/views/Dashboard.vue')
     }
   ],
 });
