@@ -82,7 +82,7 @@ const handleLogin = (command?: string) => {
 
 <style lang="scss" scoped>
 .page-header {
-  background-color: #ffffff;
+  background-color: rgba($color: #ffffff, $alpha: 0.5);
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
   padding: 12px 0; /* 稍微调整内边距以适应logo尺寸 */
   position: sticky;

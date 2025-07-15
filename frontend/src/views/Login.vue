@@ -454,7 +454,7 @@ const handleSocialLogin = (type: string) => {
       .brand-title {
         font-size: 28px;
         font-weight: 600;
-        color: #333;
+        color: #fff;
         margin-bottom: 10px;
         letter-spacing: 0.5px;
       }
