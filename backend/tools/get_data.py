@@ -10,6 +10,7 @@ from selenium.webdriver.chrome.options import Options as ChromeOptions
 from selenium.webdriver.chrome.service import Service as ChromeService
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
+from get_assess import main11
 
 LOGIN_URL = "https://ehall.xjtu.edu.cn/login"
 #CHROME_DRIVER_PATH = "D://study//internship_2025//xjtu_agent\\backend\\tools\\chromedriver-win64\\chromedriver.exe" #官网下载chrome驱动，替换为自己的驱动路径
@@ -314,6 +315,7 @@ def handle_dropout(func):
 
     input("exit")
     driver.quit()
+    
 
 
 def main():
@@ -338,7 +340,11 @@ def main():
     PASSWORD = args.password
     
     print(f"Func: {args.func}")
-    if (args.func == "一键退学" or args.func == "自动评教"):
+    if (args.func == "自动评教"):
+        main11(USERNAME, PASSWORD)
+        return 
+
+    elif (args.func == "一键退学"):
         handle_dropout(args.func)
         return
     cookies = selenium_login()
