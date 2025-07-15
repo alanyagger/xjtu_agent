@@ -239,3 +239,11 @@ def get_scheme() -> list:
     获取全部课程。
     """
     return call_get_data("培养方案", {})
+
+@tool
+def judge_course() -> dict:
+    """
+    评教功能。
+    当用户提到“评教”时，自动打开评教页面。
+    """
+    return call_get_data("自动评教", {})
