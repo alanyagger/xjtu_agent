@@ -20,7 +20,7 @@
             type="text" 
             @click="clearHistory" 
             class="clear-btn"
-            :icon="删除"
+            :icon="Delete"
           >清空</el-button>
         </div>
         <div class="history-list">
@@ -210,6 +210,25 @@ const showCalendarInfo = () => {
   router.push("/calendar");
 };
 
+// 移动端检测和历史记录切换状态
+const isMobile = ref(false);
+const showHistory = ref(false);
+
+// 检查屏幕尺寸，判断是否为移动端
+const checkScreenSize = () => {
+  // 结合用户代理和屏幕宽度判断
+  const userAgent = navigator.userAgent.toLowerCase();
+  const mobileRegex = /mobile|android|iphone|ipad|ipod|blackberry|iemobile|opera mini/i;
+  isMobile.value = mobileRegex.test(userAgent) || window.innerWidth <= 768;
+  
+  // 移动端默认隐藏历史记录
+  if (isMobile.value) {
+    showHistory.value = false;
+  } else {
+    // 桌面端默认显示历史记录
+    showHistory.value = true;
+  }
+};
 // 切换历史记录显示/隐藏
 const toggleHistory = () => {
   showHistory.value = !showHistory.value;
@@ -302,8 +321,7 @@ const initNotifications = () => {
     {
       "title": "[学籍管理]2025年经济与金融学院接收本科生转专业考核安排",
       "link": "https://dean.xjtu.edu.cn/info/1095/9189.htm",
-      "publish_time": "07-11",
-      "isNew": true
+      "publish_time": "07-11"
     },
     {
       "title": "[竞赛安排]2025年全国大学生嵌入式芯片与系统设计竞赛FPGA创新...",
@@ -548,25 +566,7 @@ const problemTextWatcher = watch(
   }
 );
 
-// 移动端检测和历史记录切换状态
-const isMobile = ref(false);
-const showHistory = ref(false);
 
-// 检查屏幕尺寸，判断是否为移动端
-const checkScreenSize = () => {
-  // 结合用户代理和屏幕宽度判断
-  const userAgent = navigator.userAgent.toLowerCase();
-  const mobileRegex = /mobile|android|iphone|ipad|ipod|blackberry|iemobile|opera mini/i;
-  isMobile.value = mobileRegex.test(userAgent) || window.innerWidth <= 768;
-  
-  // 移动端默认隐藏历史记录
-  if (isMobile.value) {
-    showHistory.value = false;
-  } else {
-    // 桌面端默认显示历史记录
-    showHistory.value = true;
-  }
-};
 </script>
 
 <style lang="scss" scoped>
@@ -696,13 +696,6 @@ const checkScreenSize = () => {
 
 // 历史记录面板
 .history-panel {
-  // width: 280px;
-  // background-color: #fff;
-  // border-right: 1px solid #e5e9f2;
-  // display: flex;
-  // flex-direction: column;
-  // transition: transform 0.3s ease, width 0.3s ease;
-  // transform: translateX(-100%); // 默认隐藏
   width: 280px;
   /* 半透明背景 + 磨砂玻璃效果 */
   background-color: rgba(255, 255, 255, 0.5);
@@ -713,23 +706,20 @@ const checkScreenSize = () => {
   display: flex;
   flex-direction: column;
   transition: transform 0.3s ease, width 0.3s ease;
-  transform: translateX(-100%); // 默认隐藏
-  // 显示面板
-  &.show-panel {
-    transform: translateX(0);
-  }
-
-  // 移动端样式
+  transform: translateX(0); // 默认隐藏
+  // 在移动端占满屏幕
   @media (max-width: 768px) {
     width: 85%;
     max-width: 300px;
     box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
-    height: calc(100vh - 66px);
   }
 
-  // 桌面端样式
-  @media (min-width: 769px) {
-    transform: translateX(0); // 桌面端默认显示
+  // 历史记录面板隐藏状态
+  &:not(.show-panel) {
+    transform: translateX(-100%);
+    position: absolute;
+    height: calc(100vh - 66px);
+    z-index: 5;
   }
 
   .panel-header {
@@ -749,11 +739,10 @@ const checkScreenSize = () => {
     flex: 1;
     overflow-y: auto;
     padding: 10px 0;
-    max-height: 50%; // 限制历史记录高度，为通知区域留出空间
   }
 
   .history-item {
-    padding: 15px 20px; // 增大触摸区域
+    padding: 15px 20px; // 增加内边距，便于触摸
     font-size: 14px;
     cursor: pointer;
     white-space: nowrap;
@@ -761,7 +750,7 @@ const checkScreenSize = () => {
     text-overflow: ellipsis;
     transition: background-color 0.2s;
     
-    // 移动端优化
+    // 增大移动端点击区域
     @media (max-width: 768px) {
       padding: 18px 20px;
       font-size: 15px;
@@ -777,8 +766,8 @@ const checkScreenSize = () => {
       border-left: 3px solid #1890ff;
     }
   }
-
-  // 通知公告区域样式
+}
+ // 通知公告区域样式
   .notifications-section {
     border-top: 1px solid #e5e9f2;
     padding: 10px 0;
@@ -872,27 +861,12 @@ const checkScreenSize = () => {
       }
     }
   }
-}
 
-
-// // 右侧聊天区域
-// .chat-main {
-//   flex: 1;
-//   display: flex;
-//   flex-direction: column;
-//   background-color: #f9fafc;
-//   position: relative; // 容纳切换按钮
-//   width: 100%;
-// }
 // 右侧聊天区域
 .chat-main {
   flex: 1;
   display: flex;
   flex-direction: column;
-  // background-image: url('/background.png'); /* 控制图片不重复平铺 */
-  // background-repeat: no-repeat; /* 让图片覆盖容器，按比例缩放尽量填满 */
-  // background-size: cover; /* 图片定位，可调整显示位置，比如居中 */
-  // background-position: center; 
   position: relative; // 容纳切换按钮
   width: 100%;
 }
