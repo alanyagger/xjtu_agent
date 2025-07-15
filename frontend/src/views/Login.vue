@@ -428,7 +428,7 @@ const handleSocialLogin = (type: string) => {
     right: -50%;
     width: 100%;
     height: 100%;
-    background: linear-gradient(135deg, #409eff 0%, #165dff 100%);
+    background: linear-gradient(135deg, #acc3db 0%, #165dff 100%);
     border-radius: 50%;
     transform: scale(1.5);
     z-index: 0;
