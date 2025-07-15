@@ -39,12 +39,12 @@ const handleLogin = (command?: string) => {
         <!-- Logo区域 - 替换为交小荣logo.svg -->
         <div class="logo-container" @click="logoImgClickHandle">
           <el-image
-            src="/logo.png"  
+            src="/logoo.png"  
             class="logo-image"
             fit="contain"
             alt="交小荣Logo"
           />
-          <!-- 移除原有文字，仅保留logo图片 -->
+          <span class="logo-text">交小荣</span>
         </div>
         
         <!-- 导航区域 -->
@@ -82,7 +82,7 @@ const handleLogin = (command?: string) => {
 
 <style lang="scss" scoped>
 .page-header {
-  background-color: #ffffff;
+  background-color: rgba($color: #ffffff, $alpha: 0.5);
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
   padding: 12px 0; /* 稍微调整内边距以适应logo尺寸 */
   position: sticky;
@@ -115,7 +115,7 @@ const handleLogin = (command?: string) => {
     .logo-image {
       height: 44px; /* 适当调整logo高度 */
       width: auto;
-      // 移除右侧margin，因为不再有文字
+      margin-left: -80px;
     }
   }
   
@@ -175,6 +175,18 @@ const handleLogin = (command?: string) => {
       }
     }
   }
+}
+
+.logo-container {
+  display: flex; /* 使用Flex布局 */
+  align-items: center; /* 垂直居中对齐 */
+  gap: 8px; /* 图片和文本之间的间距 */
+}
+
+.logo-text {
+  font-size: 25px; /* 调整字体大小 */
+  font-weight: bold; /* 加粗 */
+  color: #86c8f1; /* 文本颜色 */
 }
 
 // 响应式设计

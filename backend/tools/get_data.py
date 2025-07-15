@@ -136,6 +136,12 @@ func_map = {
             "PYFADM": "24ac40bb3d594cb0b1e036f7ce354120",
         },
         "referer": "https://ehall.xjtu.edu.cn/jwapp/sys/kcbcx/*default/index.do"
+    },
+
+    "自动评教": {
+        "url": "https://ehall.xjtu.edu.cn/jwapp/sys/wspjyyapp/*default/index.do?",
+        "data": lambda args: {},
+        "referer": "https://ehall.xjtu.edu.cn/jwapp/sys/xjydgl/*default/index.do"
     }
 
     
@@ -279,8 +285,8 @@ def fetch_course(cookie_dict, func_name, args):
         print(f"请求失败，状态码：{response.status_code}")
         print(response.text)
 
-def handle_dropout():
-    """自动打开退学界面"""
+def handle_dropout(func):
+    """自动打开界面"""
     options = ChromeOptions()
     options.add_argument('--disable-blink-features=AutomationControlled')
     options.add_argument('--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36')
@@ -301,12 +307,12 @@ def handle_dropout():
         driver.quit()
         raise Exception("登录失败，请检查用户名和密码")
 
-    # 成功登录，打开退学界面
-    print("✅ 登录成功，正在打开一键退学页面...")
-    js = f'window.open("{func_map["一键退学"]["url"]}");'
+    # 成功登录
+    print("✅ 登录成功")
+    js = f'window.open("{func_map[func]["url"]}");'
     driver.execute_script(js)
 
-    input("111")
+    input("exit")
     driver.quit()
 
 
@@ -332,8 +338,8 @@ def main():
     PASSWORD = args.password
     
     print(f"Func: {args.func}")
-    if (args.func == "一键退学"):
-        handle_dropout()
+    if (args.func == "一键退学" or args.func == "自动评教"):
+        handle_dropout(args.func)
         return
     cookies = selenium_login()
     fetch_course(cookies, args.func, args)

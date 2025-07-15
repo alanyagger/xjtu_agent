@@ -56,11 +56,12 @@ const handleLogin = () => {
         <!-- Logo区域 -->
         <div class="logo-container" @click="logoImgClickHandle">
           <el-image
-            src="/logo.png"  
+            src="/logoo.png"  
             class="logo-image"
             fit="contain"
             alt="交小荣Logo"
           />
+          <span class="logo-text">交小荣</span>
         </div>
         
         <!-- 导航区域 -->
@@ -132,6 +133,7 @@ const handleLogin = () => {
     .logo-image {
       height: 44px;
       width: auto;
+      margin-left: -80px;
     }
   }
   
@@ -191,6 +193,17 @@ const handleLogin = () => {
       }
     }
   }
+}
+.logo-container {
+  display: flex; /* 使用Flex布局 */
+  align-items: center; /* 垂直居中对齐 */
+  gap: 8px; /* 图片和文本之间的间距 */
+}
+
+.logo-text {
+  font-size: 25px; /* 调整字体大小 */
+  font-weight: bold; /* 加粗 */
+  color: #86c8f1; /* 文本颜色 */
 }
 
 @media (min-width: 768px) {
