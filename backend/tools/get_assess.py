@@ -144,14 +144,14 @@ def main11(username, password):
                 # 点击提交
                 print(" > 正在点击提交按钮...")
                 # 使用JS脚本中的CSS选择器: .bh-btn.bh-btn-success.bh-btn-large
-                submit_button = driver.find_element(By.CSS_SELECTOR, ".bh-btn.bh-btn-success.bh-btn-large")
-                submit_button.click()
+                #submit_button = driver.find_element(By.CSS_SELECTOR, ".bh-btn.bh-btn-success.bh-btn-large")
+                #submit_button.click()
 
                 # 在弹窗中点击最终确认
                 print(" > 正在点击最终确认...")
                 # 使用JS脚本中的CSS选择器: .bh-dialog-btn.bh-bg-primary.bh-color-primary-5
-                confirm_button = wait.until(EC.element_to_be_clickable((By.CSS_SELECTOR, ".bh-dialog-btn.bh-bg-primary.bh-color-primary-5")))
-                confirm_button.click()
+                #confirm_button = wait.until(EC.element_to_be_clickable((By.CSS_SELECTOR, ".bh-dialog-btn.bh-bg-primary.bh-color-primary-5")))
+                #confirm_button.click()
 
                 print(f" > \033[92m成功:\033[0m 本轮评教已提交！")
                 
@@ -201,14 +201,14 @@ def main11(username, password):
                 # 点击提交
                 print(" > 正在点击提交按钮...")
                 
-                submit_button = driver.find_element(By.CSS_SELECTOR, ".bh-btn.bh-btn-success.bh-btn-large")
-                submit_button.click()
+                #submit_button = driver.find_element(By.CSS_SELECTOR, ".bh-btn.bh-btn-success.bh-btn-large")
+                #submit_button.click()
 
                 # 在弹窗中点击最终确认
                 print(" > 正在点击最终确认...")
                 
-                confirm_button = wait.until(EC.element_to_be_clickable((By.CSS_SELECTOR, ".bh-dialog-btn.bh-bg-primary.bh-color-primary-5")))
-                confirm_button.click()
+                #confirm_button = wait.until(EC.element_to_be_clickable((By.CSS_SELECTOR, ".bh-dialog-btn.bh-bg-primary.bh-color-primary-5")))
+                #confirm_button.click()
 
                 print(f" > \033[92m成功:\033[0m 本轮期末评教已提交！")
                 
