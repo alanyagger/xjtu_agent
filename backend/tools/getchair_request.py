@@ -10,7 +10,7 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import ElementClickInterceptedException, TimeoutException
 
 try:
-    with open('config/chair_config.json', 'r', encoding='utf-8') as f:
+    with open('../chair_config.json', 'r', encoding='utf-8') as f:
         config = json.load(f)
     
     # 从配置中读取参数

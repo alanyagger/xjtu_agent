@@ -11,7 +11,7 @@ from selenium.common.exceptions import NoSuchElementException, ElementClickInter
 #edge_options.add_argument("--disable-blink-features=AutomationControlled")
 
 try:
-    with open('config/chair_config.json', 'r', encoding='utf-8') as f:
+    with open('../chair_config.json', 'r', encoding='utf-8') as f:
         config = json.load(f)
     
     # 从配置中读取参数
