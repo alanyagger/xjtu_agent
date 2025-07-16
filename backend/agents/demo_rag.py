@@ -28,7 +28,8 @@ from tools.ehall_tools import (
     drop_out,
     get_scheme,
     add_schedule_db,
-    judge_course
+    judge_course,
+    get_chair_info
 )
 
 
@@ -57,17 +58,28 @@ class EhallAgent:
         )
     
     def _get_tools(self) -> list:
-        return [
+        tools = [
             get_my_courses,
             get_term_courses,
             get_grades,
             get_all_courses,
             get_empty_classrooms,
             drop_out,
-            add_schedule_db,  # 添加课程表工具
+            add_schedule_db,
             get_scheme,
             judge_course,
+            get_chair_info,  # 添加座椅查询工具
         ]
+
+        # 调试：打印每个工具的类型
+        for i, tool in enumerate(tools):
+            print(f"工具 {i}: {tool}, 类型: {type(tool)}")
+            if hasattr(tool, 'name'):
+                print(f"  名称: {tool.name}")
+            if hasattr(tool, 'description'):
+                print(f"  描述: {tool.description}")
+
+        return tools
     
     def _load_knowledge_base(self, knowledge_base_path) -> FAISS:
         """加载本地知识库"""
@@ -119,6 +131,7 @@ class EhallAgent:
         7. add_schedule_db(name: str, start_time: str, end_time: str, user_id: str, color: str = "#2097f3", remark: str = "")：当用户提到“添加日程”“创建日程”等关键词时使用。请确保提供日程名称、开始时间、结束时间、用户ID（学号），并可选择性提供颜色和备注信息。如果没有提供时间，并要求加入到本周日程，请默认从2025年7月14日开始加入最早的日程，默认结束于2025年7月20日，周一为2025年7月14日。
         8. get_scheme()：当用户提到“培养方案”“培养计划”等关键词时使用，如果用户提到“下学期的课表”“下学期的培养方案”等关键词时，请从json文件中找出“开课学期”为2025-2026-1的课程输出。
         9. judge_course()：当用户提到“评教”“自动评教”“帮我评教”等关键词使用。
+        10. get_chair_info()：当用户提到“抢座”“自动抢座”“请帮我抢座”等关键词使用。
         """
         
         # 如果有知识库，添加知识库提示

@@ -8,13 +8,21 @@ from selenium.webdriver.common.by import By
 from selenium.common.exceptions import NoSuchElementException, ElementClickInterceptedException
 from selenium.webdriver.chrome.options import Options as ChromeOptions
 from selenium.webdriver.chrome.service import Service as ChromeService
+import sys
 
+# 获取当前文件的目录（agents/）
+current_dir = os.path.dirname(os.path.abspath(__file__))
+# 获取 backend 目录（agents/ 的上一级目录）
+backend_dir = os.path.dirname(current_dir)
+# 将 backend 目录添加到 Python 搜索路径
+sys.path.append(backend_dir)
+
+from config import config
 # 获取当前脚本所在目录
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 # 修改为相对路径
 CHROME_DRIVER_PATH = os.path.join(BASE_DIR, "chromedriver-win64", "chromedriver.exe")
-CONFIG_PATH = os.path.join(os.path.dirname(BASE_DIR), "chair_config.json")
 
 
 options = ChromeOptions()
@@ -24,7 +32,7 @@ options.add_experimental_option("excludeSwitches", ["enable-automation"])
 service = ChromeService(executable_path=CHROME_DRIVER_PATH)
 
 try:
-    with open(CONFIG_PATH, 'r', encoding='utf-8') as f:
+    with open('../chair_config.json', 'r', encoding='utf-8') as f:
         config = json.load(f)
     
     # 从配置中读取参数
@@ -237,7 +245,7 @@ def get_chair(browser):
     print(f"Successfully selected seat {selected_seat}.")
 
     
-def main():
+def main12():
     try:
         driver = webdriver.Chrome(service=service, options=options)
         driver.get(url)
@@ -251,6 +259,6 @@ def main():
     except Exception as e:
         print(f"An error occurred: {e}")
     
-if __name__ == "__main__":
-    main()
+#if __name__ == "__main__":
+#    main()
 

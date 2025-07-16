@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import os
+import sys
 import json
 import subprocess
 from langchain.tools import tool
@@ -9,6 +10,10 @@ from datetime import datetime
 from sqlalchemy.orm import sessionmaker
 from models import DBSchedule  # 导入数据库模型
 from sqlalchemy import create_engine
+
+# 导入getchair模块
+sys.path.append(os.path.join(os.path.dirname(__file__)))
+from getchair import main as getchair_main
 
 # --- 数据库连接配置 ---
 SQLALCHEMY_DATABASE_URL = "sqlite:///./users.db"  # 与FastAPI后端一致
@@ -247,3 +252,23 @@ def judge_course() -> dict:
     当用户提到“评教”时，自动打开评教页面。
     """
     return call_get_data("自动评教", {})
+
+@tool
+def get_chair_info() -> str:
+    """查询图书馆座椅信息的工具
+
+    Returns:
+        str: 座椅查询结果
+    """
+    try:
+        # 导入 getchair 模块
+        current_dir = os.path.dirname(os.path.abspath(__file__))
+        sys.path.append(current_dir)
+
+        from getchair import main as getchair_main
+
+        # 调用主函数
+        result = getchair_main()
+        return str(result) if result else "座椅查询完成，请查看详细信息"
+    except Exception as e:
+        return f"查询座椅信息时出错: {str(e)}"
