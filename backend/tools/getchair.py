@@ -81,7 +81,7 @@ def login(browser):
 
 def get_all_seats_info(browser):
     """
-    提取所有座位信息
+    提取所有座位信息/
     返回: {
         'available': ['D008', 'D009', ...],  # 可用座位列表
         'occupied': ['D007', 'D010', ...],   # 被占座位列表
