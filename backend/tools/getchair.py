@@ -66,10 +66,10 @@ url = 'http://www.lib.xjtu.edu.cn/'
 
 
 def jump_ad(browser):
-    time.sleep(2)
+    time.sleep(4)
     close_button = browser.find_element(By.XPATH, '/html/body/div[5]/ul/li[1]/div/a[1]')
     close_button.click()
-    time.sleep(1)
+    time.sleep(2)
 
 def login(browser):
     browser.find_element(By.XPATH, '//*[@id="header"]/div/div/div/div/div/div[1]/span').click()
@@ -241,7 +241,7 @@ def main():
     try:
         driver = webdriver.Chrome(service=service, options=options)
         driver.get(url)
-        time.sleep(2)
+        time.sleep(4)
         jump_ad(driver)
         login(driver)
         time.sleep(5)
