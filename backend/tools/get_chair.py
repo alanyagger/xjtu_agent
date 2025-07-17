@@ -74,17 +74,21 @@ url = 'http://www.lib.xjtu.edu.cn/'
 
 
 def jump_ad(browser):
-    time.sleep(2)
+    time.sleep(4)
     close_button = browser.find_element(By.XPATH, '/html/body/div[5]/ul/li[1]/div/a[1]')
     close_button.click()
-    time.sleep(1)
+    time.sleep(2)
 
 def login(browser):
     browser.find_element(By.XPATH, '//*[@id="header"]/div/div/div/div/div/div[1]/span').click()
     time.sleep(2)
-    browser.find_element(By.XPATH, '//*[@id="fm1"]/input[0]').send_keys(account)
-    browser.find_element(By.XPATH, '//*[@id="fm1"]/input[1]').send_keys(password)
+    print(browser.find_element(By.XPATH, '//*[@id="fm1"]/input[1]').get_attribute('value', account))
+    print(browser.find_element(By.XPATH, '//*[@id="fm1"]/input[2]').get_attribute('value', password))
+
+    browser.find_element(By.XPATH, '//*[@id="fm1"]/input[1]').send_keys(account)
+    browser.find_element(By.XPATH, '//*[@id="fm1"]/input[2]').send_keys(password)
     browser.find_element(By.XPATH, '//*[@id="account_login"]').click()
+
     time.sleep(2)
 
 def get_all_seats_info(browser):
@@ -249,7 +253,7 @@ def main12():
     try:
         driver = webdriver.Chrome(service=service, options=options)
         driver.get(url)
-        time.sleep(2)
+        time.sleep(4)
         jump_ad(driver)
         login(driver)
         time.sleep(5)

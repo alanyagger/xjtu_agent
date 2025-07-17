@@ -74,9 +74,12 @@ def jump_ad(browser):
 def login(browser):
     browser.find_element(By.XPATH, '//*[@id="header"]/div/div/div/div/div/div[1]/span').click()
     time.sleep(2)
-    browser.find_element(By.XPATH, '//*[@id="form1"]/input[1]').send_keys(account)
-    browser.find_element(By.XPATH, '//*[@id="form1"]/input[2]').send_keys(password)
-    browser.find_element(By.XPATH, '//*[@id="account_login"]').click()
+    print('\n这里是debug\n')
+    print(browser.find_element(By.XPATH, '/html/body/main/div/div/div[2]/form[1]/input[1]'))
+    print(browser.find_element(By.XPATH, '/html/body/main/div/div/div[2]/form[1]/input[2]'))
+    browser.find_element(By.XPATH, '//*[@id="vue_main"]/div[2]/div[2]/div/div[4]/div/div[2]/div[1]/div/form/div[1]/div/div/input').send_keys(account)
+    browser.find_element(By.XPATH, '//*[@id="vue_main"]/div[2]/div[2]/div/div[4]/div/div[2]/div[1]/div/form/div[2]/div/div/input').send_keys(password)
+    browser.find_element(By.XPATH, '//*[@id="vue_main"]/div[2]/div[2]/div/div[4]/div/div[2]/div[1]/div/form/div[3]/div/button').click()
     time.sleep(2)
 
 def get_all_seats_info(browser):
@@ -241,7 +244,7 @@ def main():
     try:
         driver = webdriver.Chrome(service=service, options=options)
         driver.get(url)
-        time.sleep(4)
+        time.sleep(10)
         jump_ad(driver)
         login(driver)
         time.sleep(5)
