@@ -181,8 +181,8 @@ def selenium_login():
     driver.get(LOGIN_URL)
     time.sleep(1)
     #print(driver.page_source)  # 打印页面 HTML，用于调试
-    wait.until(EC.element_to_be_clickable((By.NAME, "username"))).send_keys(USERNAME)
-    wait.until(EC.element_to_be_clickable((By.CSS_SELECTOR, 'input[placeholder="请输入密码(Please enter the password)"]'))).send_keys(PASSWORD + Keys.RETURN)
+    wait.until(EC.element_to_be_clickable((By.CSS_SELECTOR, 'input[placeholder="学工号/手机号"]'))).send_keys(USERNAME)
+    wait.until(EC.element_to_be_clickable((By.CSS_SELECTOR, 'input[placeholder="请输入登录密码"]'))).send_keys(PASSWORD + Keys.RETURN)
 
     time.sleep(2)
     driver.get("https://ehall.xjtu.edu.cn/jwapp/sys/wdkb/*default/index.do")
@@ -299,8 +299,8 @@ def handle_dropout(func):
     wait = WebDriverWait(driver, 20)
 
     driver.get(LOGIN_URL)
-    wait.until(EC.element_to_be_clickable((By.NAME, "username"))).send_keys(USERNAME)
-    wait.until(EC.element_to_be_clickable((By.CSS_SELECTOR, 'input[placeholder="请输入密码(Please enter the password)"]'))).send_keys(PASSWORD + Keys.RETURN)
+    wait.until(EC.element_to_be_clickable((By.CSS_SELECTOR, 'input[placeholder="学工号/手机号"]'))).send_keys(USERNAME)
+    wait.until(EC.element_to_be_clickable((By.CSS_SELECTOR, 'input[placeholder="请输入登录密码"]'))).send_keys(PASSWORD + Keys.RETURN)
 
     time.sleep(2)
 

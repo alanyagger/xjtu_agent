@@ -82,8 +82,8 @@ def jump_ad(browser):
 def login(browser):
     browser.find_element(By.XPATH, '//*[@id="header"]/div/div/div/div/div/div[1]/span').click()
     time.sleep(2)
-    browser.find_element(By.XPATH, '//*[@id="form1"]/input[1]').send_keys(account)
-    browser.find_element(By.XPATH, '//*[@id="form1"]/input[2]').send_keys(password)
+    browser.find_element(By.XPATH, '//*[@id="fm1"]/input[0]').send_keys(account)
+    browser.find_element(By.XPATH, '//*[@id="fm1"]/input[1]').send_keys(password)
     browser.find_element(By.XPATH, '//*[@id="account_login"]').click()
     time.sleep(2)
 
