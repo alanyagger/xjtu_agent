@@ -318,41 +318,81 @@ const generateId = () => {
 const initNotifications = () => {
   // 使用提供的通知数据
   notifications.value = [
-    {
-      "title": "[学籍管理]2025年经济与金融学院接收本科生转专业考核安排",
-      "link": "https://dean.xjtu.edu.cn/info/1095/9189.htm",
-      "publish_time": "07-11"
-    },
-    {
-      "title": "[竞赛安排]2025年全国大学生嵌入式芯片与系统设计竞赛FPGA创新...",
-      "link": "https://dean.xjtu.edu.cn/info/1172/9187.htm",
-      "publish_time": "07-10"
-    },
-    {
-      "title": "[学籍管理]电子与信息学部计算机科学与技术（国家拔尖计划）202...",
-      "link": "https://dean.xjtu.edu.cn/info/1095/9185.htm",
-      "publish_time": "07-09"
-    },
-    {
-      "title": "[学籍管理]电子与信息学部储能科学与工程（电磁储能）方向2025...",
-      "link": "https://dean.xjtu.edu.cn/info/1095/9184.htm",
-      "publish_time": "07-09"
-    },
-    {
-      "title": "[学籍管理]法学院2025年转专业笔试和面试安排",
-      "link": "https://dean.xjtu.edu.cn/info/1095/9183.htm",
-      "publish_time": "07-08"
-    },
-    {
-      "title": "[学籍管理]电气工程学院2025年本科生转专业宣讲会通知",
-      "link": "https://dean.xjtu.edu.cn/info/1095/9182.htm",
-      "publish_time": "07-08"
-    },
-    {
-      "title": "[课程安排]关于开展中华民族共同体有关讲座的通知",
-      "link": "https://dean.xjtu.edu.cn/info/1093/9181.htm",
-      "publish_time": "07-07"
-    }
+  {
+    "title": "[学籍管理]2025年生命科学与技术学院接收本科生转专业考核安排",
+    "link": "https://dean.xjtu.edu.cn/info/1095/9211.htm",
+    "publish_time": "2025-07-17"
+  },
+  {
+    "title": "[课程安排]关于2024-2025学年暑期重修班开课、选课的通知",
+    "link": "https://dean.xjtu.edu.cn/info/1093/9207.htm",
+    "publish_time": "2025-07-16"
+  },
+  {
+    "title": "[学籍管理]2025年马克思主义接收本科生转专业考核安排",
+    "link": "https://dean.xjtu.edu.cn/info/1095/9210.htm",
+    "publish_time": "2025-07-16"
+  },
+  {
+    "title": "[教材建设]关于第二届全国教材建设奖全国优秀教材（高等教育类...",
+    "link": "https://dean.xjtu.edu.cn/info/1101/9209.htm",
+    "publish_time": "2025-07-16"
+  },
+  {
+    "title": "[学籍管理]2024级核工程与核技术（强基计划）补充选拔通知",
+    "link": "https://dean.xjtu.edu.cn/info/1095/9208.htm",
+    "publish_time": "2025-07-16"
+  },
+  {
+    "title": "[学籍管理]医学部2025年转专业笔试、综合考查安排的通知",
+    "link": "https://dean.xjtu.edu.cn/info/1095/9206.htm",
+    "publish_time": "2025-07-16"
+  },
+  {
+    "title": "[课程建设]关于举办“人工智能先导计划”——通识系列讲座第6期...",
+    "link": "https://dean.xjtu.edu.cn/info/1175/9204.htm",
+    "publish_time": "2025-07-16"
+  },
+  {
+    "title": "[专业建设]关于2025年西安交通大学拟向教育部申报本科专业的公...",
+    "link": "https://dean.xjtu.edu.cn/info/1102/9203.htm",
+    "publish_time": "2025-07-16"
+  },
+  {
+    "title": "[课程安排]关于2025-2026学年第一学期本科生（不含2025级）选课...",
+    "link": "https://dean.xjtu.edu.cn/info/1093/9200.htm",
+    "publish_time": "2025-07-15"
+  },
+  {
+    "title": "[实践教学]关于公示西安交通大学2025年第一批产学合作协同育人...",
+    "link": "https://dean.xjtu.edu.cn/info/1179/9195.htm",
+    "publish_time": "2025-07-15"
+  },
+  {
+    "title": "[教学奖项]关于开展西安交通大学第十九届教学成果奖评审暨陕西...",
+    "link": "https://dean.xjtu.edu.cn/info/1177/9188.htm",
+    "publish_time": "2025-07-10"
+  },
+  {
+    "title": "[大创项目]关于举办2025年西安交通大学“大学生创新训练项目”...",
+    "link": "https://dean.xjtu.edu.cn/info/1173/9186.htm",
+    "publish_time": "2025-07-09"
+  },
+  {
+    "title": "[综合通知]“珠峰计划”（综改试验班）学生选拔通知",
+    "link": "https://dean.xjtu.edu.cn/info/1092/9180.htm",
+    "publish_time": "2025-07-07"
+  },
+  {
+    "title": "[课程建设]关于组织开展陕西特色线上课程结题验收工作的通知",
+    "link": "https://dean.xjtu.edu.cn/info/1175/9175.htm",
+    "publish_time": "2025-07-02"
+  },
+  {
+    "title": "[大创项目]关于公布2024年西安交通大学国家级、省级“大学生创...",
+    "link": "https://dean.xjtu.edu.cn/info/1173/9173.htm",
+    "publish_time": "2025-07-02"
+  }
   ];
 };
 
