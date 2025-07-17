@@ -14,6 +14,7 @@ from selenium.webdriver.chrome.options import Options as ChromeOptions
 from selenium.webdriver.chrome.service import Service as ChromeService
 import os
 import sys
+from selenium.webdriver.common.keys import Keys
 
 # 获取当前文件的目录（agents/）
 current_dir = os.path.dirname(os.path.abspath(__file__))
@@ -32,7 +33,7 @@ CHROME_DRIVER_PATH = os.path.join(BASE_DIR, "chromedriver-win64", "chromedriver.
 # credentials = config.get_ehall_credentials()
 # USERNAME = credentials["username"]
 # PASSWORD = credentials["password"]
-SUGGESTION_TEXT = "好"
+SUGGESTION_TEXT = "谢谢老师"
 
 
 POST_LOGIN_ELEMENT_SELECTOR = "#ampHasLogin" 
@@ -89,13 +90,17 @@ def main11(username, password):
         start_login.click()
 
         print("正在填写账号密码...")
+        wait.until(EC.element_to_be_clickable((By.CSS_SELECTOR, 'input[placeholder="学工号/手机号"]'))).send_keys(
+            username)
+        wait.until(EC.element_to_be_clickable((By.CSS_SELECTOR, 'input[placeholder="请输入登录密码"]'))).send_keys(
+            password + Keys.RETURN)
         # 等待用户名输入框出现并填写
-        username_input = wait.until(EC.presence_of_element_located((By.XPATH, "//*[@id='form1']/input[1]")))
-        password_input = driver.find_element(By.XPATH, "//*[@id='form1']/input[2]") 
-        login = driver.find_element(By.XPATH, '//*[@id="account_login"]')  # 登录按钮
-        username_input.send_keys(username)
-        password_input.send_keys(password)
-        safe_click(driver, login, "登录按钮")      
+        # username_input = wait.until(EC.presence_of_element_located((By.XPATH, "//*[@id='form1']/input[1]")))
+        # password_input = driver.find_element(By.XPATH, "//*[@id='form1']/input[2]")
+        # login = driver.find_element(By.XPATH, '//*[@id="account_login"]')  # 登录按钮
+        # username_input.send_keys(username)
+        # password_input.send_keys(password)
+        # safe_click(driver, login, "登录按钮")
         # 等待登录成功的信号出现
         wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, POST_LOGIN_ELEMENT_SELECTOR)))
         print("\n登录成功！")
