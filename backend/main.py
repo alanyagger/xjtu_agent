@@ -87,13 +87,13 @@ from agents.demo_rag import EhallAgent
 from thread_local import set_current_username, get_current_username
 
 
-# ---------- 新增数据库配置（用户表） ----------
-SQLALCHEMY_DATABASE_URL = "sqlite:///./users.db"  # 数据库文件存在backend目录
+# ---------- 数据库配置（用户表） ----------
+SQLALCHEMY_DATABASE_URL = "sqlite:///./users.db"  # 数据库文件存在本地的backend目录
 engine = create_engine(SQLALCHEMY_DATABASE_URL, connect_args={"check_same_thread": False})
 UserSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
-# ---------- 新增JWT和密码加密配置 ----------
-SECRET_KEY = config.get_secret_key() or "your-secret-key"  # 去config.py里加SECRET_KEY
+# ---------- JWT和密码加密配置 ----------
+SECRET_KEY = config.get_secret_key() or "your-secret-key"  
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
 
